@@ -211,7 +211,7 @@ body {
    #answerReveal dùng absolute nên KHÔNG làm box cao thêm
 ============================================================ */
 .hanzi-box {
-  height: var(--qBoxH);          /* ← CỐ ĐỊNH: không bao giờ thay đổi */
+  height: var(--qBoxH);
   flex-shrink: 0;
   border-radius: 18px;
   border: 1px solid var(--stroke);
@@ -222,8 +222,8 @@ body {
   align-items: center;
   padding: 20px 16px 16px;
   text-align: center;
-  position: relative;            /* ← quan trọng: neo cho #answerReveal absolute */
-  overflow: hidden;              /* cắt decoration, không cắt nội dung chính */
+  position: relative;
+  overflow: hidden;
 }
 
 .hanzi-box::before {
@@ -272,7 +272,7 @@ body {
   }
 }
 
-/* --- Nội dung câu hỏi: dùng z-index để nằm trên reveal --- */
+/* --- Nội dung câu hỏi: dùng z-index để nằm trên background, dưới reveal --- */
 .hanzi {
   position: relative;
   z-index: 2;
@@ -318,26 +318,46 @@ body {
 }
 
 /* ============================================================
-   ANSWER REVEAL — absolute bên trong .hanzi-box
-   Hiện ra TRÊN nền question, KHÔNG làm thay đổi kích thước box
+   ✅ ANSWER REVEAL — FIX: luôn căn giữa, không "dính trên"
+   - Overlay absolute phủ toàn bộ .hanzi-box
+   - LUÔN là flex container
+   - Ẩn/hiện bằng opacity/visibility để không mất căn giữa
 ============================================================ */
 #answerReveal {
   position: absolute;
-  inset: 0;                      /* phủ toàn bộ .hanzi-box */
-  z-index: 4;                    /* trên .hanzi, .pinyin */
-  /* padding đều 4 phía — reveal card căn giữa trong box */
+  inset: 0;
+  z-index: 4;
   padding: 14px;
+
   display: flex;
-  align-items: center;           /* căn giữa theo chiều dọc */
-  justify-content: center;       /* căn giữa theo chiều ngang */
+  align-items: center;
+  justify-content: center;
+
+  /* mặc định ẩn */
+  opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 
-  /* Mặc định ẩn, JS toggle display hoặc opacity */
-  /* display: none đã được set inline trong HTML */
+  transition: opacity 0.18s ease, visibility 0.18s ease;
 }
 
+/* hiện reveal */
+#answerReveal.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* fallback: nếu JS render trực tiếp text/HTML mà không bọc .reveal-card */
+#answerReveal > :first-child {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* reveal card */
 .reveal-card {
   width: 100%;
+  max-width: 100%;
   border-radius: 14px;
   border: 1px solid var(--stroke2);
   background: rgba(255,255,255,0.96);
@@ -348,9 +368,10 @@ body {
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  pointer-events: auto;          /* bật lại click cho card reveal */
+  margin: 0;
 }
 
+/* reveal text */
 .reveal-hanzi {
   font-size: 26px;
   font-weight: 950;
@@ -358,7 +379,6 @@ body {
   margin-bottom: 6px;
   line-height: 1.1;
   word-break: break-word;
-  /* clamp nếu quá dài */
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -615,12 +635,4 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ============================================================
-   HELPER — dùng class này thay vì display:none / display:block
-   JS: el.classList.add('is-visible') / el.classList.remove('is-visible')
-============================================================ */
-#answerReveal.is-visible {
-  display: flex !important;
 }
