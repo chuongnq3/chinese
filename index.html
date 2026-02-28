@@ -26,8 +26,25 @@
           <div class="title" id="questionTitle">Câu 1</div>
         </div>
 
-        <div class="subpill" id="scoreBox" aria-label="Tổng điểm">
-          Điểm: <span id="scoreValue">0</span>
+        <!-- RIGHT: score + settings -->
+        <div class="tb-right" style="display:flex; align-items:center; gap:10px;">
+          <div class="subpill" id="scoreBox" aria-label="Tổng điểm">
+            Điểm: <span id="scoreValue">0</span>
+          </div>
+
+          <!-- Settings (gear) -->
+          <a class="iconbtn" href="setting.html" aria-label="Cài đặt" title="Cài đặt" style="text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round"
+              />
+              <path
+                d="M19.4 15a7.9 7.9 0 0 0 .1-2l2-1.5-2-3.4-2.4 1a8.1 8.1 0 0 0-1.7-1l-.4-2.6H9l-.4 2.6a8.1 8.1 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a7.9 7.9 0 0 0 .1 2l-2 1.5 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.6h6l.4-2.6c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.5z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round"
+              />
+            </svg>
+          </a>
         </div>
       </header>
 
