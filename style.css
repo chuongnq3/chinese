@@ -56,7 +56,7 @@
   --gap:    10px;
 
   /* Touch */
-  --tap:    52px;   /* minimum tap target */
+  --tap:    52px;
 }
 
 /* ═══════════════════════════════════════════════
@@ -70,7 +70,6 @@
 
 html {
   height: 100%;
-  /* Prevent zoom on input focus (iOS) */
   touch-action: manipulation;
 }
 
@@ -81,14 +80,12 @@ body {
   line-height: 1.5;
   color: var(--ink);
   background: var(--bg);
-  /* Subtle blue-tinted gradient background */
   background-image:
     radial-gradient(ellipse 120% 60% at -10% -10%, rgba(99,152,255,0.18) 0%, transparent 55%),
     radial-gradient(ellipse 80%  60% at 110% 110%, rgba(37,99,235,0.10) 0%, transparent 50%);
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* iOS safe area */
   padding-top: env(safe-area-inset-top);
 }
 
@@ -99,7 +96,6 @@ body {
   min-height: 100%;
   display: flex;
   justify-content: center;
-  /* Bottom safe area for home bar */
   padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
 }
 
@@ -126,7 +122,6 @@ body {
   gap: 10px;
 }
 
-/* Icon button */
 .iconbtn {
   width: var(--tap);
   height: var(--tap);
@@ -138,12 +133,11 @@ body {
   box-shadow: var(--sh-2);
   cursor: pointer;
   color: var(--ink-3);
-  transition: background 0.12s, border-color 0.12s,
-              color 0.12s, box-shadow 0.12s;
-  /* native button reset */
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
   -webkit-appearance: none;
   appearance: none;
   user-select: none;
+  text-decoration: none;
 }
 .iconbtn:active {
   background: var(--surface-3);
@@ -153,7 +147,6 @@ body {
   transition-duration: 0.08s;
 }
 
-/* Title */
 .title {
   font-size: 17px;
   font-weight: 900;
@@ -161,7 +154,6 @@ body {
   color: var(--ink);
 }
 
-/* Score pill */
 .subpill {
   display: flex;
   align-items: center;
@@ -202,7 +194,6 @@ body {
 .hanzi-box {
   position: relative;
   border-radius: var(--r-lg);
-  /* Soft inset look */
   background: var(--surface-2);
   border: 1.5px solid var(--border-2);
   min-height: 200px;
@@ -215,7 +206,6 @@ body {
   overflow: hidden;
 }
 
-/* Decorative light blob top-left */
 .hanzi-box::before {
   content: "";
   position: absolute;
@@ -226,7 +216,6 @@ body {
   pointer-events: none;
 }
 
-/* Dot grid texture */
 .hanzi-box::after {
   content: "";
   position: absolute;
@@ -237,7 +226,6 @@ body {
   opacity: 0.5;
 }
 
-/* Audio button — top right */
 .audio-btn {
   position: absolute;
   top: 12px;
@@ -255,6 +243,8 @@ body {
   transition: color 0.12s, border-color 0.12s, background 0.12s;
   z-index: 2;
   -webkit-appearance: none;
+  appearance: none;
+  user-select: none;
 }
 .audio-btn:active {
   color: var(--blue);
@@ -264,7 +254,6 @@ body {
   transition-duration: 0.08s;
 }
 
-/* The big Chinese character */
 .hanzi {
   position: relative;
   z-index: 1;
@@ -274,7 +263,6 @@ body {
   color: var(--ink);
   letter-spacing: 3px;
   line-height: 1;
-  /* subtle text shadow for depth */
   text-shadow: 0 2px 8px rgba(17,24,39,0.10);
 }
 
@@ -301,52 +289,46 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
-   ANSWER REVEAL (inside hanzi-box)
+   ANSWER REVEAL (NO INNER CARD)
 ═══════════════════════════════════════════════ */
 #answerReveal {
   position: relative;
   z-index: 2;
   width: 100%;
-  margin-top: 16px;
-}
-
-.reveal-card {
-  border-radius: var(--r);
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  padding: 16px;
-  box-shadow: var(--sh-2);
-  text-align: left;
-  animation: popIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  margin-top: 12px;
+  display: none;
+  /* ✅ không có viền / nền / shadow để tránh "card con" */
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  animation: popIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.96) translateY(6px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.reveal-card h3 {
+#answerReveal .ar-hanzi {
   font-family: var(--font-han);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
-  color: var(--ink);
   letter-spacing: 2px;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  color: var(--ink);
 }
 
-.reveal-card p {
+#answerReveal .ar-row {
   display: flex;
   gap: 6px;
   align-items: baseline;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--ink-2);
   padding: 3px 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
 }
 
-.reveal-card b {
+#answerReveal .ar-row b {
   font-weight: 800;
   font-size: 11px;
   text-transform: uppercase;
@@ -369,7 +351,6 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  /* min touch target */
   min-height: var(--tap);
   padding: 11px 14px;
   border-radius: var(--r);
@@ -377,10 +358,8 @@ body {
   background: var(--surface);
   cursor: pointer;
   box-shadow: var(--sh-2);
-  /* stagger */
   animation: riseIn 0.22s cubic-bezier(0.22,1,0.36,1) both;
   transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
-  /* prevent text selection on tap */
   user-select: none;
   -webkit-user-select: none;
 }
@@ -395,7 +374,6 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Hover — desktop */
 @media (hover: hover) {
   .opt:hover {
     border-color: rgba(37,99,235,0.22);
@@ -409,14 +387,12 @@ body {
   }
 }
 
-/* Active — mobile tap */
 .opt:active:not(.disabled) {
   transform: scale(0.985);
   background: var(--surface-3);
   transition-duration: 0.08s;
 }
 
-/* Badge (A B C D) */
 .opt .badge {
   flex: 0 0 36px;
   width: 36px;
@@ -482,10 +458,8 @@ body {
 }
 .opt.is-wrong .label { color: #7f1d1d; }
 
-/* ── Disabled ────────────────── */
 .opt.disabled { pointer-events: none; }
 
-/* Not selected, not wrong — dim slightly when answered */
 .opt.disabled:not(.is-correct):not(.is-wrong) {
   opacity: 0.5;
 }
@@ -517,6 +491,7 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-appearance: none;
+  appearance: none;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 
@@ -526,7 +501,6 @@ body {
   transition-duration: 0.08s;
 }
 
-/* Primary — Skip */
 .btn-primary {
   background: var(--blue);
   border-color: var(--blue);
@@ -567,14 +541,11 @@ body {
 /* ═══════════════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════════════ */
-
-/* Larger phones (iPhone 14 Pro, Samsung S24, …) */
 @media (min-width: 390px) {
   .hanzi { font-size: 70px; }
   .opt .label { font-size: 15.5px; }
 }
 
-/* Small phones (SE, Galaxy A series) */
 @media (max-width: 360px) {
   :root { --tap: 48px; }
   .hanzi    { font-size: 54px; }
@@ -584,14 +555,32 @@ body {
   .opt .label { font-size: 14px; }
 }
 
-/* Tablet / desktop — card floats with more breathing room */
 @media (min-width: 500px) {
   .app { padding-top: 32px; }
   .hanzi { font-size: 76px; }
 }
 
-/* Landscape phones — reduce vertical padding */
 @media (max-height: 600px) and (orientation: landscape) {
   .hanzi-box { min-height: 140px; padding-top: 24px; }
   .hanzi      { font-size: 48px; }
+}
+
+/* ─────────────────────────────────────────────
+   HANZI BOX: reveal mode (green card)
+   ✅ bỏ viền để không còn thấy "đường viền"
+───────────────────────────────────────────── */
+.hanzi-box.is-reveal {
+  background: var(--green-bg);
+  border-color: transparent;
+}
+
+.hanzi-box.is-reveal::before {
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 10%, rgba(21,128,61,0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 85% 90%, rgba(21,128,61,0.10) 0%, transparent 60%);
+}
+
+.hanzi-box.is-reveal::after {
+  background-image: radial-gradient(rgba(21,128,61,0.14) 1px, transparent 1px);
+  opacity: 0.55;
 }
