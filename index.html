@@ -72,8 +72,16 @@
             Chọn nghĩa đúng bên dưới
           </div>
 
-          <!-- ✅ Result reveal INSIDE card -->
-          <section id="answerReveal" aria-label="Giải thích" style="display:none;"></section>
+          <!-- ✅ Result reveal INSIDE hanzi-box (overlay, centered by CSS) -->
+          <section id="answerReveal" aria-label="Giải thích">
+            <!-- IMPORTANT: keep wrapper .reveal-card so CSS centers it correctly -->
+            <div class="reveal-card" role="group" aria-label="Nội dung giải thích">
+              <div class="reveal-hanzi" id="revealHanzi">您好</div>
+              <div class="reveal-row"><b>Pinyin:</b> <span id="revealPinyin">nínhǎo</span></div>
+              <div class="reveal-row"><b>Nghĩa:</b> <span id="revealMeaning">Xin chào (kính ngữ)</span></div>
+              <div class="reveal-row"><b>Ví dụ:</b> <span id="revealExample">您好！很高兴认识您。</span></div>
+            </div>
+          </section>
 
         </section>
 
