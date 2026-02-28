@@ -4,6 +4,12 @@
 //  - Auto-fit text (shrink to fit)
 //  - Answer compare by record id (ID/id)
 //  - ✅ Reads user settings from localStorage (setting.html)
+//  - ✅ Robust TTS for Web/Android/iOS (warmup + pick zh voice)
+//  - ✅ Speak Chinese for ANY picked option (correct or wrong)
+//  - ✅ SFX:
+//      * wrong  -> Fail.ogg
+//      * correct-> True.ogg
+//      * switch -> Switch_001.ogg (when going next question)
 // =====================================
 
 // ===============================
@@ -35,6 +41,15 @@ const SETTINGS = {
 
     // max shrink steps (avoid infinite loops)
     maxSteps: 22
+  },
+
+  // SFX (place files in same folder or adjust paths)
+  sfx: {
+    enabled: true,
+    failUrl: "Fail.ogg",
+    trueUrl: "True.ogg",
+    switchUrl: "Switch_001.ogg",
+    volume: 0.9
   }
 };
 
@@ -59,6 +74,24 @@ let answered = false;
 let autoTimer = null;
 let wrongOptionIds = new Set();
 let qCount = 0;
+
+// TTS state
+let TTS = {
+  supported: false,
+  voicesReady: false,
+  voices: [],
+  lastSpeakAt: 0
+};
+
+// SFX state (HTMLAudioElement pool)
+let SFX = {
+  supported: false,
+  inited: false,
+  aFail: null,
+  aTrue: null,
+  aSwitch: null,
+  lastPlayAt: 0
+};
 
 // DOM (cache)
 const DOM = {
@@ -93,13 +126,18 @@ async function init() {
   // ✅ Apply saved settings BEFORE loading data / starting questions
   applySavedUserSettings();
 
+  // ✅ Init TTS + SFX
+  initTTS();
+  initSFX(); // pre-create audio elements (will be unlocked on first user gesture)
+
   const raw = await loadJson(DATA_URL);
   DATA = normalizeData(raw);
 
   applyTypeFilter(SETTINGS.defaultTypes);
   updateScore();
 
-  nextQuestion();
+  // first question (no switch sound to avoid weird first-load noise)
+  nextQuestion({ playSwitchSfx: false });
 }
 
 function cacheDom() {
@@ -242,6 +280,13 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
+// Find record by id (for speaking picked option)
+function findRecordById(id) {
+  const n = Number(id);
+  if (!Number.isFinite(n)) return null;
+  return FILTERED_DATA.find(it => it.id === n) || DATA.find(it => it.id === n) || null;
+}
+
 // =====================================
 // RENDER HELPERS
 // =====================================
@@ -325,11 +370,188 @@ function scheduleAutoFit() {
 }
 
 // =====================================
+// TTS (Robust for Web/Android/iOS)
+// =====================================
+
+function initTTS() {
+  TTS.supported = ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+  if (!TTS.supported) return;
+
+  const synth = window.speechSynthesis;
+
+  const refreshVoices = () => {
+    try {
+      const v = synth.getVoices();
+      if (Array.isArray(v) && v.length) {
+        TTS.voices = v;
+        TTS.voicesReady = true;
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  synth.onvoiceschanged = () => {
+    refreshVoices();
+  };
+
+  refreshVoices();
+  if (!TTS.voicesReady) {
+    setTimeout(refreshVoices, 50);
+    setTimeout(refreshVoices, 250);
+  }
+}
+
+function pickChineseVoice() {
+  const voices = TTS.voices || [];
+  if (!voices.length) return null;
+
+  const preferExact = ["zh-CN", "zh-HK", "zh-TW", "zh"];
+  for (const lang of preferExact) {
+    const v = voices.find(v => (v.lang || "").toLowerCase() === lang.toLowerCase());
+    if (v) return v;
+  }
+  return voices.find(v => (v.lang || "").toLowerCase().startsWith("zh")) || null;
+}
+
+function canSpeakNow() {
+  const now = Date.now();
+  if (now - TTS.lastSpeakAt < 120) return false;
+  TTS.lastSpeakAt = now;
+  return true;
+}
+
+// Speak Chinese text (should be called inside user gesture handlers)
+function speakChinese(text) {
+  if (!TTS.supported) return;
+  const s = String(text ?? "").trim();
+  if (!s) return;
+  if (!canSpeakNow()) return;
+
+  const synth = window.speechSynthesis;
+
+  // refresh voices on-demand (iOS)
+  if (!TTS.voicesReady) {
+    try {
+      const v = synth.getVoices();
+      if (Array.isArray(v) && v.length) {
+        TTS.voices = v;
+        TTS.voicesReady = true;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const u = new SpeechSynthesisUtterance(s);
+
+  const v = pickChineseVoice();
+  if (v) {
+    u.voice = v;
+    u.lang = v.lang;
+  } else {
+    u.lang = "zh-CN";
+  }
+
+  u.rate = 0.95;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+
+  try { synth.cancel(); } catch {}
+  try { synth.speak(u); } catch {}
+}
+
+// =====================================
+// SFX (Fail/True/Switch) - works on iOS after user gesture
+// =====================================
+
+function initSFX() {
+  SFX.supported = typeof Audio !== "undefined";
+  if (!SFX.supported) return;
+
+  // create elements (do not autoplay)
+  SFX.aFail = new Audio(SETTINGS.sfx.failUrl);
+  SFX.aTrue = new Audio(SETTINGS.sfx.trueUrl);
+  SFX.aSwitch = new Audio(SETTINGS.sfx.switchUrl);
+
+  [SFX.aFail, SFX.aTrue, SFX.aSwitch].forEach(a => {
+    a.preload = "auto";
+    a.volume = clamp(Number(SETTINGS.sfx.volume ?? 0.9), 0, 1);
+  });
+
+  SFX.inited = true;
+}
+
+// iOS blocks audio until user gesture; call this on first gesture
+function unlockSFXOnce() {
+  if (!SFX.inited || SFX.unlocked) return;
+  SFX.unlocked = true;
+
+  // attempt tiny play-pause to unlock (inside gesture)
+  const tryUnlock = (a) => {
+    try {
+      a.muted = true;
+      const p = a.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          a.pause();
+          a.currentTime = 0;
+          a.muted = false;
+        }).catch(() => {
+          a.muted = false;
+        });
+      } else {
+        a.pause();
+        a.currentTime = 0;
+        a.muted = false;
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  tryUnlock(SFX.aFail);
+  tryUnlock(SFX.aTrue);
+  tryUnlock(SFX.aSwitch);
+}
+
+function canPlaySfxNow() {
+  const now = Date.now();
+  if (now - SFX.lastPlayAt < 80) return false; // avoid double-fire
+  SFX.lastPlayAt = now;
+  return true;
+}
+
+function playSfx(kind) {
+  if (!SETTINGS.sfx.enabled) return;
+  if (!SFX.inited) return;
+  if (!canPlaySfxNow()) return;
+
+  let a = null;
+  if (kind === "fail") a = SFX.aFail;
+  else if (kind === "true") a = SFX.aTrue;
+  else if (kind === "switch") a = SFX.aSwitch;
+
+  if (!a) return;
+
+  try {
+    a.currentTime = 0;
+    const p = a.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch {
+    // ignore
+  }
+}
+
+// =====================================
 // QUESTION ENGINE
 // =====================================
 
-function nextQuestion() {
+function nextQuestion(opts = {}) {
   clearTimeout(autoTimer);
+
+  const playSwitchSfx = opts.playSwitchSfx !== false; // default true
+  if (playSwitchSfx) playSfx("switch");
 
   answered = false;
   wrongOptionIds.clear();
@@ -465,11 +687,19 @@ function bindOptionClicks() {
 }
 
 function onPickOption(opt) {
+  // ✅ unlock SFX on first gesture (iOS)
+  unlockSFXOnce();
+
   if (answered) return;
   if (!opt || opt.classList.contains("disabled")) return;
 
   const pickedId = parseInt(opt.dataset.id, 10);
   if (!Number.isFinite(pickedId)) return;
+
+  // ✅ Speak Chinese for the picked option (correct OR wrong)
+  const pickedRecord = findRecordById(pickedId);
+  const hanzi = pickedRecord?.["GIẢN THỂ"] ?? "";
+  speakChinese(hanzi); // must be inside gesture
 
   if (wrongOptionIds.has(pickedId)) return;
 
@@ -484,6 +714,9 @@ function handleWrong(opt, pickedId) {
   score = clamp(score + SETTINGS.scoring.wrong, SETTINGS.scoring.floor, Number.POSITIVE_INFINITY);
   updateScore();
 
+  // ✅ wrong SFX
+  playSfx("fail");
+
   wrongOptionIds.add(pickedId);
   opt.classList.add("is-wrong", "disabled");
 
@@ -493,6 +726,9 @@ function handleWrong(opt, pickedId) {
 function handleCorrect(opt) {
   score = score + SETTINGS.scoring.correct;
   updateScore();
+
+  // ✅ correct SFX
+  playSfx("true");
 
   opt.classList.add("is-correct");
   answered = true;
@@ -510,7 +746,7 @@ function handleCorrect(opt) {
   // ✅ apply autoNext settings chosen by user
   if (SETTINGS.autoNext.enabled) {
     clearTimeout(autoTimer);
-    autoTimer = setTimeout(nextQuestion, SETTINGS.autoNext.delayMs);
+    autoTimer = setTimeout(() => nextQuestion({ playSwitchSfx: true }), SETTINGS.autoNext.delayMs);
   }
 }
 
@@ -573,17 +809,27 @@ function bindActions() {
   if (DOM.btnSpeak) DOM.btnSpeak.addEventListener("click", onSpeak);
 
   window.addEventListener("resize", () => scheduleAutoFit(), { passive: true });
+
+  // also unlock SFX on any first touch/click anywhere (optional but helps iOS)
+  // does not affect logic; only tries unlock once
+  document.addEventListener("touchstart", unlockSFXOnce, { passive: true, once: true });
+  document.addEventListener("click", unlockSFXOnce, { passive: true, once: true });
 }
 
 function onContinue() {
-  nextQuestion();
+  // user gesture -> unlock + play switch immediately
+  unlockSFXOnce();
+  nextQuestion({ playSwitchSfx: true });
 }
 
 function onSkip() {
-  nextQuestion();
+  unlockSFXOnce();
+  nextQuestion({ playSwitchSfx: true });
 }
 
 function onHint() {
+  unlockSFXOnce();
+
   if (answered) return;
 
   const candidates = DOM.opts
@@ -598,17 +844,14 @@ function onHint() {
   candidates[0].style.visibility = "hidden";
 }
 
+// Speak button: speak CURRENT QUESTION Hanzi (not the option)
 function onSpeak() {
+  unlockSFXOnce();
+
   if (!currentQuestion) return;
 
   const text = currentQuestion["GIẢN THỂ"];
   if (!text) return;
 
-  if (!("speechSynthesis" in window)) return;
-
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "zh-CN";
-
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(u);
+  speakChinese(text);
 }
