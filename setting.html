@@ -5,252 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Cài đặt • Flashcard tiếng Trung</title>
 
+  <!-- Base app styles -->
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Minimal extra styles for settings page (kept small & consistent) */
-    .settings-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--r-lg);
-      padding: 16px;
-      box-shadow: var(--sh-lg);
-    }
-    .set-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .set-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--ink);
-      letter-spacing: -0.2px;
-    }
-    .set-sub {
-      font-size: 13px;
-      color: var(--ink-3);
-      margin-bottom: 14px;
-      line-height: 1.45;
-    }
-    .set-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .set-row {
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      background: var(--surface);
-      box-shadow: var(--sh-xs);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .set-row .meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-    .set-row .meta .k {
-      font-weight: 800;
-      color: var(--ink);
-      font-size: 14px;
-      line-height: 1.2;
-    }
-    .set-row .meta .d {
-      color: var(--ink-3);
-      font-size: 12.5px;
-      line-height: 1.3;
-    }
-    .set-row .ctrl {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* switch */
-    .switch {
-      position: relative;
-      width: 46px;
-      height: 28px;
-      border-radius: 999px;
-      background: var(--surface-3);
-      border: 1px solid var(--line);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .switch::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: var(--sh-xs);
-      transition: transform 0.18s ease;
-    }
-    .switch[data-on="true"] {
-      background: rgba(28,99,242,0.18);
-      border-color: rgba(28,99,242,0.25);
-    }
-    .switch[data-on="true"]::after {
-      transform: translateX(18px);
-    }
-
-    select, input[type="number"]{
-      height: 36px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      padding: 0 10px;
-      font-family: var(--font-ui);
-      font-size: 14px;
-      color: var(--ink-2);
-      outline: none;
-    }
-    select:focus, input[type="number"]:focus{
-      outline: 2px solid var(--blue);
-      outline-offset: 2px;
-    }
-    .set-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-  </style>
+  <!-- Settings-only styles -->
+  <link rel="stylesheet" href="setting.css" />
 </head>
 
 <body>
   <div class="app">
-    <div class="screen" role="application" aria-label="Cài đặt">
+    <!-- NEW: phone-like outer frame -->
+    <div class="phone-shell" role="presentation">
+      <div class="phone-frame" role="presentation">
+        <div class="phone-screen">
+          <div class="screen" role="application" aria-label="Cài đặt">
 
-      <!-- TOP BAR (settings) -->
-      <header class="topbar">
-        <div class="tb-left">
-          <a class="iconbtn" href="index.html" aria-label="Quay lại" title="Quay lại" style="text-decoration:none;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <div class="title">Cài đặt</div>
-        </div>
+            <!-- TOP BAR (settings) -->
+            <header class="topbar">
+              <div class="tb-left">
+                <a class="iconbtn" href="index.html" aria-label="Quay lại" title="Quay lại" style="text-decoration:none;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <div class="title">Cài đặt</div>
+              </div>
 
-        <div class="subpill" aria-label="Phiên bản">
-          v1.0
-        </div>
-      </header>
+              <div class="subpill" aria-label="Phiên bản">
+                v1.0
+              </div>
+            </header>
 
-      <main class="settings-card" aria-label="Thiết lập">
-        <div class="set-head">
-          <div class="set-title">Thiết lập luyện tập</div>
-        </div>
-        <div class="set-sub">
-          Đây là màn hình cài đặt cơ bản. Nếu bạn muốn, tôi có thể nối trực tiếp các option này vào <code>localStorage</code> và đọc lại trong <code>app.js</code>.
-        </div>
+            <main class="settings-card" aria-label="Thiết lập">
+              <div class="set-head">
+                <div class="set-title">Thiết lập luyện tập</div>
+              </div>
 
-        <div class="set-list">
-          <div class="set-row">
-            <div class="meta">
-              <div class="k">Chế độ tự chuyển câu</div>
-              <div class="d">Đúng câu sẽ tự chuyển sau vài giây.</div>
-            </div>
-            <div class="ctrl">
-              <div class="switch" id="swAutoNext" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
-            </div>
+              <div class="set-sub">
+                Đây là màn hình cài đặt cơ bản. Nếu bạn muốn, tôi có thể nối trực tiếp các option này vào
+                <code>localStorage</code> và đọc lại trong <code>app.js</code>.
+              </div>
+
+              <div class="set-list">
+                <div class="set-row">
+                  <div class="meta">
+                    <div class="k">Chế độ tự chuyển câu</div>
+                    <div class="d">Đúng câu sẽ tự chuyển sau vài giây.</div>
+                  </div>
+                  <div class="ctrl">
+                    <div class="switch" id="swAutoNext" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <div class="meta">
+                    <div class="k">Thời gian tự chuyển (giây)</div>
+                    <div class="d">Mặc định 5 giây.</div>
+                  </div>
+                  <div class="ctrl">
+                    <input id="autoNextDelay" type="number" min="1" max="30" value="5" aria-label="Thời gian tự chuyển (giây)" />
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <div class="meta">
+                    <div class="k">Bật ẩn câu hỏi khi trả lời đúng</div>
+                    <div class="d">Chỉ hiện phần giải thích trong thẻ.</div>
+                  </div>
+                  <div class="ctrl">
+                    <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <div class="meta">
+                    <div class="k">Hiện pinyin khi câu hỏi không phải pinyin</div>
+                    <div class="d">Dòng pinyin phụ dưới câu hỏi.</div>
+                  </div>
+                  <div class="ctrl">
+                    <div class="switch" id="swShowPinyin" data-on="false" role="switch" aria-checked="false" tabindex="0"></div>
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <div class="meta">
+                    <div class="k">Bộ từ (TYPE)</div>
+                    <div class="d">Ví dụ: HSK1, HSK2...</div>
+                  </div>
+                  <div class="ctrl">
+                    <select id="typeSelect" aria-label="Chọn bộ từ">
+                      <option value="HSK1" selected>HSK1</option>
+                      <option value="HSK2">HSK2</option>
+                      <option value="HSK3">HSK3</option>
+                      <option value="HSK4">HSK4</option>
+                      <option value="HSK5">HSK5</option>
+                      <option value="HSK6">HSK6</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="set-actions">
+                <a class="btn" href="index.html" role="button" aria-label="Hủy" style="text-decoration:none;">Hủy</a>
+                <button class="btn btn-primary" id="btnSave" type="button" aria-label="Lưu cài đặt">Lưu</button>
+              </div>
+            </main>
+
+            <script>
+              // Minimal UI-only behavior (no dependency on app.js yet)
+              function toggleSwitch(el) {
+                const on = el.getAttribute("data-on") === "true";
+                el.setAttribute("data-on", String(!on));
+                el.setAttribute("aria-checked", String(!on));
+              }
+
+              const swAutoNext = document.getElementById("swAutoNext");
+              const swFlipOnCorrect = document.getElementById("swFlipOnCorrect");
+              const swShowPinyin = document.getElementById("swShowPinyin");
+
+              [swAutoNext, swFlipOnCorrect, swShowPinyin].forEach(sw => {
+                sw.addEventListener("click", () => toggleSwitch(sw));
+                sw.addEventListener("keydown", (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleSwitch(sw);
+                  }
+                });
+              });
+
+              document.getElementById("btnSave").addEventListener("click", () => {
+                window.location.href = "index.html";
+              });
+            </script>
+
           </div>
-
-          <div class="set-row">
-            <div class="meta">
-              <div class="k">Thời gian tự chuyển (giây)</div>
-              <div class="d">Mặc định 5 giây.</div>
-            </div>
-            <div class="ctrl">
-              <input id="autoNextDelay" type="number" min="1" max="30" value="5" aria-label="Thời gian tự chuyển (giây)" />
-            </div>
-          </div>
-
-          <div class="set-row">
-            <div class="meta">
-              <div class="k">Bật ẩn câu hỏi khi trả lời đúng</div>
-              <div class="d">Chỉ hiện phần giải thích trong thẻ.</div>
-            </div>
-            <div class="ctrl">
-              <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
-            </div>
-          </div>
-
-          <div class="set-row">
-            <div class="meta">
-              <div class="k">Hiện pinyin khi câu hỏi không phải pinyin</div>
-              <div class="d">Dòng pinyin phụ dưới câu hỏi.</div>
-            </div>
-            <div class="ctrl">
-              <div class="switch" id="swShowPinyin" data-on="false" role="switch" aria-checked="false" tabindex="0"></div>
-            </div>
-          </div>
-
-          <div class="set-row">
-            <div class="meta">
-              <div class="k">Bộ từ (TYPE)</div>
-              <div class="d">Ví dụ: HSK1, HSK2...</div>
-            </div>
-            <div class="ctrl">
-              <select id="typeSelect" aria-label="Chọn bộ từ">
-                <option value="HSK1" selected>HSK1</option>
-                <option value="HSK2">HSK2</option>
-                <option value="HSK3">HSK3</option>
-                <option value="HSK4">HSK4</option>
-                <option value="HSK5">HSK5</option>
-                <option value="HSK6">HSK6</option>
-              </select>
-            </div>
-          </div>
         </div>
-
-        <div class="set-actions">
-          <a class="btn" href="index.html" role="button" aria-label="Hủy" style="text-decoration:none;">Hủy</a>
-          <button class="btn btn-primary" id="btnSave" type="button" aria-label="Lưu cài đặt">Lưu</button>
-        </div>
-      </main>
-
-      <script>
-        // Minimal UI-only behavior (no dependency on app.js yet)
-        // If you want: persist these into localStorage + read them in app.js.
-        function toggleSwitch(el) {
-          const on = el.getAttribute("data-on") === "true";
-          el.setAttribute("data-on", String(!on));
-          el.setAttribute("aria-checked", String(!on));
-        }
-
-        const swAutoNext = document.getElementById("swAutoNext");
-        const swFlipOnCorrect = document.getElementById("swFlipOnCorrect");
-        const swShowPinyin = document.getElementById("swShowPinyin");
-
-        [swAutoNext, swFlipOnCorrect, swShowPinyin].forEach(sw => {
-          sw.addEventListener("click", () => toggleSwitch(sw));
-          sw.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggleSwitch(sw);
-            }
-          });
-        });
-
-        document.getElementById("btnSave").addEventListener("click", () => {
-          // Placeholder: hook lưu vào localStorage sau
-          // For now: just go back
-          window.location.href = "index.html";
-        });
-      </script>
-
+      </div>
     </div>
   </div>
 </body>
