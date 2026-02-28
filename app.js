@@ -1,16 +1,19 @@
 // =====================================
 // app.js - Flashcard HSK (ID-based)
-//  - Layout tuned for fixed iOS-like card height (via CSS)
-//  - Auto-fit text (Duolingo/Quizlet style): shrink font to avoid height growth
+//  - Fixed-height iOS-like card (CSS)
+//  - Auto-fit text (shrink to fit)
 //  - Answer compare by record id (ID/id)
+//  - ✅ Reads user settings from localStorage (setting.html)
 // =====================================
 
-// SETTINGS
+// ===============================
+// SETTINGS (DEFAULT)
+// ===============================
 const SETTINGS = {
   scoring: { correct: 20, wrong: -10, floor: 0 },
   autoNext: { enabled: true, delayMs: 5000 },
 
-  // Types filter (you'll build UI later)
+  // Types filter (wired to settings page via localStorage)
   defaultTypes: ["HSK1"],
   answersCount: 4,
 
@@ -34,6 +37,9 @@ const SETTINGS = {
     maxSteps: 22
   }
 };
+
+// localStorage key shared with setting.html
+const SETTINGS_STORAGE_KEY = "FC_SETTINGS_V1";
 
 // Types for question/answer
 const ASK_TYPES = ["VIETNAMESE", "GIẢN THỂ", "PINYIN"];
@@ -77,13 +83,15 @@ const DOM = {
 // =====================================
 // INIT
 // =====================================
-
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   cacheDom();
   bindActions();
   bindOptionClicks();
+
+  // ✅ Apply saved settings BEFORE loading data / starting questions
+  applySavedUserSettings();
 
   const raw = await loadJson(DATA_URL);
   DATA = normalizeData(raw);
@@ -136,6 +144,63 @@ function normalizeData(raw) {
 }
 
 // =====================================
+// USER SETTINGS (from setting.html)
+// =====================================
+
+function tryJsonParse(str) {
+  try { return JSON.parse(str); } catch { return null; }
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function sanitizeTypes(arr) {
+  const out = (Array.isArray(arr) ? arr : [])
+    .map(x => String(x ?? "").trim())
+    .filter(Boolean);
+
+  // guard: must keep at least 1 type
+  return out.length ? out : SETTINGS.defaultTypes.slice();
+}
+
+function applySavedUserSettings() {
+  const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+  if (!raw) return;
+
+  const saved = tryJsonParse(raw);
+  if (!saved || typeof saved !== "object") return;
+
+  // expected payload (from setting.html):
+  // {
+  //   autoNext: boolean,
+  //   autoNextDelay: number (seconds),
+  //   flipOnCorrect: boolean,
+  //   defaultTypes: string[]
+  // }
+
+  if (typeof saved.autoNext === "boolean") {
+    SETTINGS.autoNext.enabled = saved.autoNext;
+  }
+
+  if (saved.autoNextDelay != null) {
+    const sec = Number(saved.autoNextDelay);
+    if (Number.isFinite(sec)) {
+      const secClamped = clamp(sec, 1, 30);
+      SETTINGS.autoNext.delayMs = Math.round(secClamped * 1000);
+    }
+  }
+
+  if (typeof saved.flipOnCorrect === "boolean") {
+    SETTINGS.flipOnCorrect = saved.flipOnCorrect;
+  }
+
+  if (saved.defaultTypes != null) {
+    SETTINGS.defaultTypes = sanitizeTypes(saved.defaultTypes);
+  }
+}
+
+// =====================================
 // FILTER
 // =====================================
 
@@ -166,10 +231,6 @@ function shuffle(arr) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
-}
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
 }
 
 function escapeHtml(str) {
@@ -209,8 +270,6 @@ function hideQuestionUi() {
 
 // =====================================
 // AUTO-FIT TEXT (Duolingo/Quizlet-like)
-//  - Ensures fixed-height containers don't grow.
-//  - Shrinks font-size until content fits.
 // =====================================
 
 function resetInlineFont(el) {
@@ -221,7 +280,6 @@ function resetInlineFont(el) {
 
 function fits(el) {
   if (!el) return true;
-  // tolerance 1px for rounding
   return el.scrollHeight <= el.clientHeight + 1;
 }
 
@@ -229,12 +287,10 @@ function shrinkToFit(el, minPx, maxSteps = 16) {
   if (!SETTINGS.autoFit.enabled) return;
   if (!el) return;
 
-  // If element has no layout yet, skip.
   const cs = window.getComputedStyle(el);
   let fontPx = parseFloat(cs.fontSize);
   if (!Number.isFinite(fontPx)) return;
 
-  // If already fits, no work.
   if (fits(el)) return;
 
   let steps = 0;
@@ -248,12 +304,10 @@ function shrinkToFit(el, minPx, maxSteps = 16) {
 function autoFitAll() {
   if (!SETTINGS.autoFit.enabled) return;
 
-  // Question area: hanzi/pinyin/instruction
   shrinkToFit(DOM.hanzi, SETTINGS.autoFit.min.question, SETTINGS.autoFit.maxSteps);
   shrinkToFit(DOM.pinyin, SETTINGS.autoFit.min.pinyin, SETTINGS.autoFit.maxSteps);
   shrinkToFit(DOM.instruction, SETTINGS.autoFit.min.instruction, SETTINGS.autoFit.maxSteps);
 
-  // Answers labels (each option)
   DOM.opts.forEach(opt => {
     const label = opt?.querySelector?.(".label");
     if (!label) return;
@@ -261,7 +315,6 @@ function autoFitAll() {
   });
 }
 
-// Call after DOM changes; using RAF makes it more stable on mobile.
 function scheduleAutoFit() {
   if (!SETTINGS.autoFit.enabled) return;
   requestAnimationFrame(() => {
@@ -284,11 +337,13 @@ function nextQuestion() {
   clearReveal();
   showQuestionUi();
 
-  // reset inline font so new content starts at CSS sizes
   resetInlineFont(DOM.hanzi);
   resetInlineFont(DOM.pinyin);
   resetInlineFont(DOM.instruction);
   DOM.opts.forEach(opt => resetInlineFont(opt?.querySelector?.(".label")));
+
+  // Safety: ensure filter uses current setting (if user changed and came back)
+  applyTypeFilter(SETTINGS.defaultTypes);
 
   currentQuestion = randomItem(FILTERED_DATA);
   correctId = currentQuestion.id;
@@ -303,14 +358,12 @@ function nextQuestion() {
   renderAnswers();
   updateInstruction();
 
-  // reset option state
   DOM.opts.forEach(o => {
     o.classList.remove("disabled", "is-wrong", "is-correct");
     o.style.visibility = "visible";
     o.style.display = "";
   });
 
-  // enforce fixed-height look: fit content into existing boxes
   scheduleAutoFit();
 }
 
@@ -339,7 +392,6 @@ function buildAnswerRecords() {
   picks.push(currentQuestion);
   used.add(correctId);
 
-  // 1) from filtered
   const pool1 = FILTERED_DATA.filter(it => it.id !== correctId);
   shuffle(pool1);
   for (const it of pool1) {
@@ -349,7 +401,6 @@ function buildAnswerRecords() {
     used.add(it.id);
   }
 
-  // 2) fallback from all data
   if (picks.length < need) {
     const pool2 = DATA.filter(it => it.id !== correctId);
     shuffle(pool2);
@@ -405,9 +456,6 @@ function updateInstruction() {
 
 // =====================================
 // OPTIONS CLICK
-//  - Wrong: -10 each time, mark red, lock only that option
-//  - Correct: +20, mark green, lock all options, reveal in card,
-//             auto next after delay (Continue button still works)
 // =====================================
 
 function bindOptionClicks() {
@@ -437,10 +485,8 @@ function handleWrong(opt, pickedId) {
   updateScore();
 
   wrongOptionIds.add(pickedId);
-
   opt.classList.add("is-wrong", "disabled");
 
-  // keep fixed height: label might wrap after class changes
   scheduleAutoFit();
 }
 
@@ -451,27 +497,25 @@ function handleCorrect(opt) {
   opt.classList.add("is-correct");
   answered = true;
 
-  // lock all
   DOM.opts.forEach(o => o.classList.add("disabled"));
 
-  // reveal in card
   revealAnswer();
 
-  // flip: hide question lines so reveal gets full space (Duolingo-like)
   if (SETTINGS.flipOnCorrect) {
     hideQuestionUi();
   }
 
   scheduleAutoFit();
 
+  // ✅ apply autoNext settings chosen by user
   if (SETTINGS.autoNext.enabled) {
+    clearTimeout(autoTimer);
     autoTimer = setTimeout(nextQuestion, SETTINGS.autoNext.delayMs);
   }
 }
 
 // =====================================
 // REVEAL
-//  - Render compact structure to fit fixed height
 // =====================================
 
 function revealAnswer() {
@@ -493,10 +537,8 @@ function revealAnswer() {
     </div>
   `;
 
-  // ✅ dùng class để hiện overlay (không dùng style.display)
   DOM.reveal.classList.add("is-visible");
 
-  // Fit reveal content too
   const revealHanzi = DOM.reveal.querySelector(".reveal-hanzi");
   if (revealHanzi) {
     resetInlineFont(revealHanzi);
@@ -516,18 +558,12 @@ function clearReveal() {
   if (!DOM.reveal) return;
 
   if (DOM.hanziBox) DOM.hanziBox.classList.remove("is-reveal");
-
-  // ✅ tắt overlay bằng class
   DOM.reveal.classList.remove("is-visible");
   DOM.reveal.innerHTML = "";
 }
 
 // =====================================
 // ACTION BUTTONS
-//  - Hint: hide one wrong option (not correct, not disabled, not hidden)
-//  - Skip: go next (no penalty for now)
-//  - Continue: go next immediately
-//  - Speak: speechSynthesis on simplified text
 // =====================================
 
 function bindActions() {
@@ -536,7 +572,6 @@ function bindActions() {
   if (DOM.btnContinue) DOM.btnContinue.addEventListener("click", onContinue);
   if (DOM.btnSpeak) DOM.btnSpeak.addEventListener("click", onSpeak);
 
-  // Keep the fixed-height fit stable on rotate / resize (vh-based layout)
   window.addEventListener("resize", () => scheduleAutoFit(), { passive: true });
 }
 
