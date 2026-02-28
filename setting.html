@@ -5,142 +5,256 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Cài đặt • Flashcard tiếng Trung</title>
 
-  <!-- Base app styles -->
   <link rel="stylesheet" href="style.css" />
-  <!-- Settings-only styles -->
   <link rel="stylesheet" href="setting.css" />
 </head>
 
 <body>
   <div class="app">
-    <!-- NEW: phone-like outer frame -->
-    <div class="phone-shell" role="presentation">
-      <div class="phone-frame" role="presentation">
-        <div class="phone-screen">
-          <div class="screen" role="application" aria-label="Cài đặt">
+    <div class="screen" role="application" aria-label="Cài đặt">
 
-            <!-- TOP BAR (settings) -->
-            <header class="topbar">
-              <div class="tb-left">
-                <a class="iconbtn" href="index.html" aria-label="Quay lại" title="Quay lại" style="text-decoration:none;">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </a>
-                <div class="title">Cài đặt</div>
-              </div>
+      <!-- TOP BAR — same structure as index -->
+      <header class="topbar">
+        <div class="tb-left">
+          <!-- Home like index -->
+          <a class="iconbtn" href="index.html" aria-label="Trang chủ" title="Trang chủ" style="text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-10.5z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </svg>
+          </a>
 
-              <div class="subpill" aria-label="Phiên bản">
-                v1.0
-              </div>
-            </header>
-
-            <main class="settings-card" aria-label="Thiết lập">
-              <div class="set-head">
-                <div class="set-title">Thiết lập luyện tập</div>
-              </div>
-
-              <div class="set-sub">
-                Đây là màn hình cài đặt cơ bản. Nếu bạn muốn, tôi có thể nối trực tiếp các option này vào
-                <code>localStorage</code> và đọc lại trong <code>app.js</code>.
-              </div>
-
-              <div class="set-list">
-                <div class="set-row">
-                  <div class="meta">
-                    <div class="k">Chế độ tự chuyển câu</div>
-                    <div class="d">Đúng câu sẽ tự chuyển sau vài giây.</div>
-                  </div>
-                  <div class="ctrl">
-                    <div class="switch" id="swAutoNext" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
-                  </div>
-                </div>
-
-                <div class="set-row">
-                  <div class="meta">
-                    <div class="k">Thời gian tự chuyển (giây)</div>
-                    <div class="d">Mặc định 5 giây.</div>
-                  </div>
-                  <div class="ctrl">
-                    <input id="autoNextDelay" type="number" min="1" max="30" value="5" aria-label="Thời gian tự chuyển (giây)" />
-                  </div>
-                </div>
-
-                <div class="set-row">
-                  <div class="meta">
-                    <div class="k">Bật ẩn câu hỏi khi trả lời đúng</div>
-                    <div class="d">Chỉ hiện phần giải thích trong thẻ.</div>
-                  </div>
-                  <div class="ctrl">
-                    <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
-                  </div>
-                </div>
-
-                <div class="set-row">
-                  <div class="meta">
-                    <div class="k">Hiện pinyin khi câu hỏi không phải pinyin</div>
-                    <div class="d">Dòng pinyin phụ dưới câu hỏi.</div>
-                  </div>
-                  <div class="ctrl">
-                    <div class="switch" id="swShowPinyin" data-on="false" role="switch" aria-checked="false" tabindex="0"></div>
-                  </div>
-                </div>
-
-                <div class="set-row">
-                  <div class="meta">
-                    <div class="k">Bộ từ (TYPE)</div>
-                    <div class="d">Ví dụ: HSK1, HSK2...</div>
-                  </div>
-                  <div class="ctrl">
-                    <select id="typeSelect" aria-label="Chọn bộ từ">
-                      <option value="HSK1" selected>HSK1</option>
-                      <option value="HSK2">HSK2</option>
-                      <option value="HSK3">HSK3</option>
-                      <option value="HSK4">HSK4</option>
-                      <option value="HSK5">HSK5</option>
-                      <option value="HSK6">HSK6</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="set-actions">
-                <a class="btn" href="index.html" role="button" aria-label="Hủy" style="text-decoration:none;">Hủy</a>
-                <button class="btn btn-primary" id="btnSave" type="button" aria-label="Lưu cài đặt">Lưu</button>
-              </div>
-            </main>
-
-            <script>
-              // Minimal UI-only behavior (no dependency on app.js yet)
-              function toggleSwitch(el) {
-                const on = el.getAttribute("data-on") === "true";
-                el.setAttribute("data-on", String(!on));
-                el.setAttribute("aria-checked", String(!on));
-              }
-
-              const swAutoNext = document.getElementById("swAutoNext");
-              const swFlipOnCorrect = document.getElementById("swFlipOnCorrect");
-              const swShowPinyin = document.getElementById("swShowPinyin");
-
-              [swAutoNext, swFlipOnCorrect, swShowPinyin].forEach(sw => {
-                sw.addEventListener("click", () => toggleSwitch(sw));
-                sw.addEventListener("keydown", (e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    toggleSwitch(sw);
-                  }
-                });
-              });
-
-              document.getElementById("btnSave").addEventListener("click", () => {
-                window.location.href = "index.html";
-              });
-            </script>
-
-          </div>
+          <div class="title" id="settingsTitle">Cài đặt</div>
         </div>
+
+        <div class="tb-right" style="display:flex; align-items:center; gap:10px;">
+          <!-- v1.0 in SAME FORMAT as score pill -->
+          <div class="subpill" id="verBox" aria-label="Phiên bản">
+            Phiên bản: <span id="verValue">v1.0</span>
+          </div>
+
+          <!-- Gear like index but ACTIVE -->
+          <a class="iconbtn is-active" href="setting.html" aria-label="Cài đặt" title="Cài đặt"
+            style="text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06
+           a2 2 0 1 1-2.83 2.83l-.06-.06
+           a1.65 1.65 0 0 0-1.82-.33
+           1.65 1.65 0 0 0-1 1.51V21
+           a2 2 0 1 1-4 0v-.09
+           a1.65 1.65 0 0 0-1-1.51
+           1.65 1.65 0 0 0-1.82.33l-.06.06
+           a2 2 0 1 1-2.83-2.83l.06-.06
+           a1.65 1.65 0 0 0 .33-1.82
+           1.65 1.65 0 0 0-1.51-1H3
+           a2 2 0 1 1 0-4h.09
+           a1.65 1.65 0 0 0 1.51-1
+           1.65 1.65 0 0 0-.33-1.82l-.06-.06
+           a2 2 0 1 1 2.83-2.83l.06.06
+           a1.65 1.65 0 0 0 1.82.33h0
+           a1.65 1.65 0 0 0 1-1.51V3
+           a2 2 0 1 1 4 0v.09
+           a1.65 1.65 0 0 0 1 1.51
+           a1.65 1.65 0 0 0 1.82-.33l.06-.06
+           a2 2 0 1 1 2.83 2.83l-.06.06
+           a1.65 1.65 0 0 0-.33 1.82v0
+           a1.65 1.65 0 0 0 1.51 1H21
+           a2 2 0 1 1 0 4h-.09
+           a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- MAIN CARD — same .card as index -->
+      <main class="card" aria-label="Cài đặt">
+
+        <!-- “Question box” height = --qBoxH -->
+        <section class="hanzi-box settings-hero" aria-label="Giới thiệu">
+          <div class="settings-head">
+            <div class="settings-h">Thiết lập luyện tập</div>
+            <div class="settings-sub">
+              Chỉnh nhanh vài tuỳ chọn cơ bản. (Có thể nối vào <code>localStorage</code> sau.)
+            </div>
+          </div>
+        </section>
+
+        <!-- “Answers” area: 4 rows height like A–D -->
+        <section class="answers settings-list" aria-label="Tuỳ chọn">
+
+          <div class="opt set-row" role="group" aria-label="Tự chuyển câu">
+            <div class="badge" aria-hidden="true">1</div>
+            <div class="label">
+              <div class="k">Chế độ tự chuyển câu</div>
+              <div class="d">Đúng câu sẽ tự chuyển sau vài giây.</div>
+            </div>
+            <div class="set-ctrl">
+              <div class="switch" id="swAutoNext" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
+            </div>
+          </div>
+
+          <div class="opt set-row" role="group" aria-label="Thời gian tự chuyển">
+            <div class="badge" aria-hidden="true">2</div>
+            <div class="label">
+              <div class="k">Thời gian tự chuyển (giây)</div>
+              <div class="d">Mặc định 5 giây.</div>
+            </div>
+            <div class="set-ctrl">
+              <input id="autoNextDelay" class="set-input" type="number" min="1" max="30" value="5"
+                aria-label="Thời gian tự chuyển (giây)" />
+            </div>
+          </div>
+
+          <div class="opt set-row" role="group" aria-label="Ẩn câu hỏi khi đúng">
+            <div class="badge" aria-hidden="true">3</div>
+            <div class="label">
+              <div class="k">Ẩn câu hỏi khi trả lời đúng</div>
+              <div class="d">Chỉ hiện phần giải thích trong thẻ.</div>
+            </div>
+            <div class="set-ctrl">
+              <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- TYPE row opens bottom sheet (keeps fixed height like index) -->
+          <div class="opt set-row" id="typeRow" role="button" tabindex="0" aria-label="Bộ từ">
+            <div class="badge" aria-hidden="true">4</div>
+            <div class="label">
+              <div class="k">Bộ từ (TYPE)</div>
+              <div class="d">Chọn nhiều bộ để trộn câu hỏi.</div>
+            </div>
+            <div class="set-ctrl type-summary" id="typeSummary" aria-label="Các bộ đang chọn">
+              HSK1
+            </div>
+          </div>
+
+        </section>
+      </main>
+
+      <!-- BOTTOM ACTIONS — same as index -->
+      <footer class="bottom" aria-label="Hành động">
+        <a class="btn" href="index.html" role="button" aria-label="Hủy" style="text-decoration:none;">Hủy</a>
+        <button class="btn btn-primary" id="btnSave" type="button" aria-label="Lưu">Lưu</button>
+        <a class="btn" href="index.html" role="button" aria-label="Tiếp tục" style="text-decoration:none;">Tiếp tục</a>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- TYPE Bottom Sheet (MUST be inside body) -->
+  <div class="type-sheet" id="typeSheet" aria-hidden="true">
+    <div class="sheet-backdrop" id="sheetBackdrop" aria-hidden="true"></div>
+
+    <div class="sheet-panel" role="dialog" aria-label="Chọn bộ từ" aria-modal="true">
+      <div class="sheet-head">
+        <div class="sheet-title">Chọn bộ từ</div>
+        <button class="sheet-close" id="sheetClose" type="button" aria-label="Đóng">Xong</button>
+      </div>
+
+      <div class="sheet-body" id="sheetTypes" role="group" aria-label="Danh sách bộ từ">
+        <button class="chip is-on" type="button" data-type="HSK1" aria-pressed="true">HSK1</button>
+        <button class="chip" type="button" data-type="HSK2" aria-pressed="false">HSK2</button>
+        <button class="chip" type="button" data-type="HSK3" aria-pressed="false">HSK3</button>
+        <button class="chip" type="button" data-type="HSK4" aria-pressed="false">HSK4</button>
+        <button class="chip" type="button" data-type="HSK5" aria-pressed="false">HSK5</button>
+        <button class="chip" type="button" data-type="HSK6" aria-pressed="false">HSK6</button>
       </div>
     </div>
   </div>
+
+  <script>
+    function toggleSwitch(el) {
+      const on = el.getAttribute("data-on") === "true";
+      el.setAttribute("data-on", String(!on));
+      el.setAttribute("aria-checked", String(!on));
+    }
+
+    const swAutoNext = document.getElementById("swAutoNext");
+    const swFlipOnCorrect = document.getElementById("swFlipOnCorrect");
+
+    [swAutoNext, swFlipOnCorrect].forEach(sw => {
+      sw.addEventListener("click", () => toggleSwitch(sw));
+      sw.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleSwitch(sw);
+        }
+      });
+    });
+
+    // ---- TYPE bottom sheet ----
+    const typeRow = document.getElementById("typeRow");
+    const typeSheet = document.getElementById("typeSheet");
+    const sheetBackdrop = document.getElementById("sheetBackdrop");
+    const sheetClose = document.getElementById("sheetClose");
+    const sheetTypes = document.getElementById("sheetTypes");
+    const typeSummary = document.getElementById("typeSummary");
+
+    function getSelectedTypes() {
+      return Array.from(sheetTypes.querySelectorAll(".chip.is-on"))
+        .map(b => b.dataset.type);
+    }
+
+    function updateSummary() {
+      const sel = getSelectedTypes();
+      typeSummary.textContent = sel.join(" + ");
+    }
+
+    function openSheet() {
+      typeSheet.classList.add("is-open");
+      typeSheet.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSheet() {
+      typeSheet.classList.remove("is-open");
+      typeSheet.setAttribute("aria-hidden", "true");
+      updateSummary();
+    }
+
+    typeRow.addEventListener("click", openSheet);
+    typeRow.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openSheet();
+      }
+    });
+
+    sheetBackdrop.addEventListener("click", closeSheet);
+    sheetClose.addEventListener("click", closeSheet);
+
+    sheetTypes.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if (!chip) return;
+
+      const isOn = chip.classList.contains("is-on");
+      chip.classList.toggle("is-on", !isOn);
+      chip.setAttribute("aria-pressed", String(!isOn));
+
+      // guard: must keep at least 1 selected
+      if (getSelectedTypes().length === 0) {
+        chip.classList.add("is-on");
+        chip.setAttribute("aria-pressed", "true");
+      }
+    });
+
+    document.getElementById("btnSave").addEventListener("click", () => {
+      // UI-only for now: you can wire to localStorage later
+      // const payload = {
+      //   autoNext: swAutoNext.getAttribute("data-on")==="true",
+      //   autoNextDelay: Number(document.getElementById("autoNextDelay").value || 5),
+      //   flipOnCorrect: swFlipOnCorrect.getAttribute("data-on")==="true",
+      //   defaultTypes: getSelectedTypes(),
+      // };
+      // console.log(payload);
+
+      window.location.href = "index.html";
+    });
+
+    updateSummary();
+  </script>
 </body>
 </html>
