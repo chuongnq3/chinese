@@ -41,10 +41,8 @@
   /* Touch-safe sizes (min 44px per Apple/Google HIG) */
   --touchMin: 48px;
 
-  /* Card heights — dùng dvh thay vh để tránh thanh địa chỉ di động */
-  --cardH: calc(100dvh - 160px);  /* responsive theo chiều cao thực tế */
-  --qBoxH: clamp(220px, 34dvh, 280px);
-  --answersH: clamp(200px, 30dvh, 240px);
+  /* Sizes */
+  --optH: 52px;    /* chiều cao mỗi đáp án — đảm bảo touch area */
   --bottomH: 52px;
 }
 
@@ -92,18 +90,20 @@ body {
   min-height: 100dvh;
   display: flex;
   justify-content: center;
+  align-items: stretch;  /* quan trọng: kéo .screen lấp đầy chiều cao */
 
-  /* Padding tính thêm vùng notch & home indicator */
   padding:
-    max(16px, env(safe-area-inset-top))    /* top: notch */
-    max(14px, env(safe-area-inset-right))  /* right */
-    max(16px, env(safe-area-inset-bottom)) /* bottom: home indicator */
-    max(14px, env(safe-area-inset-left))   /* left */
+    max(16px, env(safe-area-inset-top))
+    max(14px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left))
   ;
 }
 
 .screen {
   width: min(var(--maxw), 100%);
+  flex: 1;               /* chiếm toàn bộ chiều cao .app */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
@@ -194,20 +194,16 @@ body {
    MAIN CARD
 ============================================================ */
 .card {
-  height: var(--cardH);
-  min-height: 420px;
+  /* Bỏ height cứng — card tự lấp đầy chiều cao còn lại trong .screen */
+  flex: 1;
+  min-height: 0;         /* flex-child phải có min-height:0 để co được */
   background: var(--card);
   border: 1px solid var(--stroke2);
   border-radius: var(--radius2);
   padding: 14px;
   box-shadow: var(--shadow);
-
-  /* Chỉ dùng backdrop-filter khi hardware hỗ trợ tốt */
-  @supports (backdrop-filter: blur(1px)) {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -217,7 +213,9 @@ body {
    QUESTION BOX
 ============================================================ */
 .hanzi-box {
-  height: var(--qBoxH);
+  /* Không dùng height cứng — box tự co theo nội dung, không chiếm không gian thừa */
+  flex: 0 0 auto;         /* không giãn, chỉ vừa đủ nội dung */
+  min-height: 130px;      /* đảm bảo có chỗ cho chữ + pinyin + hint */
   border-radius: 18px;
   border: 1px solid var(--stroke);
   background: var(--cardSolid);
@@ -225,11 +223,10 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 16px;
+  padding: 20px 16px 18px; /* padding thay cho height cứng */
   text-align: center;
   position: relative;
   overflow: hidden;
-  flex: 0 0 auto;
 }
 
 .hanzi-box::before {
@@ -324,22 +321,30 @@ body {
 }
 
 /* ============================================================
-   ANSWERS
+   ANSWERS — flex:1 tự lấp đầy, không bao giờ bị cắt đáp án D
 ============================================================ */
 .answers {
-  height: var(--answersH);
+  /* Bỏ height cứng & overflow:hidden — thay bằng flex:1 */
+  flex: 1;
+  min-height: 0;
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow: hidden;
-  flex: 0 0 auto;
+  /* Cho phép scroll nếu màn hình cực nhỏ, thay vì cắt nội dung */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* Ẩn thanh scroll */
+  scrollbar-width: none;
 }
+.answers::-webkit-scrollbar { display: none; }
 
 .opt {
-  /* Đủ 44px chiều cao tối thiểu */
-  height: calc((var(--answersH) - 30px) / 4); /* 4 rows, 3 gaps × 10px */
-  min-height: 44px;
+  /* Chiều cao cố định mỗi đáp án — đảm bảo touch area */
+  height: var(--optH);
+  min-height: var(--optH);
+  flex-shrink: 0;        /* không bị co lại dù answers scroll */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -349,7 +354,6 @@ body {
   background: rgba(255,255,255,0.82);
   cursor: pointer;
   box-shadow: var(--shadow2);
-  /* Transition nhanh hơn trên mobile */
   transition: transform 0.10s cubic-bezier(.34,1.56,.64,1),
               box-shadow 0.14s ease,
               border-color 0.14s ease,
@@ -357,7 +361,6 @@ body {
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
-  /* Đảm bảo touch area đủ lớn */
   touch-action: manipulation;
 }
 
@@ -544,22 +547,22 @@ body {
 ============================================================ */
 @media (max-height: 680px) {
   :root {
-    --qBoxH: clamp(200px, 30dvh, 240px);
-    --answersH: clamp(186px, 28dvh, 210px);
+    --optH: 48px;
     --bottomH: 48px;
     --gap: 10px;
   }
+  .hanzi-box { padding: 14px 16px 12px; min-height: 110px; }
   .hanzi { font-size: clamp(38px, 10vw, 52px); }
   .title { font-size: 18px; }
 }
 
 @media (max-width: 360px) {
   :root {
-    --qBoxH: 210px;
-    --answersH: 196px;
+    --optH: 46px;
     --bottomH: 48px;
     --gap: 10px;
   }
+  .hanzi-box { padding: 12px 14px 10px; min-height: 100px; }
   .opt .badge { width: 32px; height: 32px; border-radius: 12px; }
   .title { font-size: 18px; }
 }
