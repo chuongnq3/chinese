@@ -1,5 +1,6 @@
 /* ============================================================
    MOBILE-FIRST CSS — Tối ưu cho iOS & Android
+   Chiều cao card KHÔNG đổi giữa lúc hỏi và lúc reveal đáp án
    ============================================================ */
 
 :root{
@@ -34,15 +35,26 @@
   --badBg: rgba(239,68,68,0.14);
   --badStroke: rgba(239,68,68,0.30);
 
-  /* Sizing */
+  /* Layout — maxw KHÔNG ĐỔI để web không bị ảnh hưởng */
   --maxw: 430px;
   --gap: 12px;
 
-  /* Touch-safe sizes (min 44px per Apple/Google HIG) */
+  /* Touch-safe sizes */
   --touchMin: 48px;
 
-  /* Sizes */
-  --optH: 52px;    /* chiều cao mỗi đáp án — đảm bảo touch area */
+  /*
+   * Chiều cao các vùng — tổng cộng cố định để card không nhảy:
+   *   hanzi-box:   240px  (chứa cả reveal bên trong, absolute)
+   *   answers:     4 × 54px + 3 × 10px gap = 246px
+   *   bottom:       52px
+   *   padding card: 14px × 2 = 28px
+   *   gap answers→bottom: 12px
+   *   gap hanzi→answers:  12px
+   *   ─────────────────────────────
+   *   card total ≈ 590px  (ổn định trên mọi màn hình)
+   */
+  --qBoxH: 240px;
+  --optH:   54px;
   --bottomH: 52px;
 }
 
@@ -51,14 +63,12 @@
 ============================================================ */
 *, *::before, *::after {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; /* Bỏ highlight xanh khi tap trên Android */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   height: 100%;
-  /* Ngăn zoom kép (double-tap zoom) trên iOS */
   touch-action: manipulation;
-  /* Render font sắc nét trên iOS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -67,7 +77,7 @@ html {
 body {
   margin: 0;
   min-height: 100%;
-  min-height: -webkit-fill-available; /* iOS Safari full height fix */
+  min-height: -webkit-fill-available;
 
   font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Text",
                "Google Sans", Roboto, Helvetica, Arial, sans-serif;
@@ -77,36 +87,33 @@ body {
     radial-gradient(1000px 600px at 10% -10%, rgba(111,182,255,0.28), transparent 60%),
     radial-gradient(900px 600px at 110% 0%, rgba(46,123,209,0.18), transparent 55%),
     linear-gradient(180deg, var(--bg), var(--bg2));
-  background-attachment: fixed; /* Nền cố định khi scroll */
+  background-attachment: fixed;
 
-  /* Ngăn overscroll bounce trên iOS làm lộ nền trắng */
-  overscroll-behavior: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* ============================================================
-   APP WRAPPER — Safe Area cho notch/Dynamic Island/chin
+   APP WRAPPER — Safe Area (notch / home indicator)
 ============================================================ */
 .app {
   min-height: 100dvh;
   display: flex;
   justify-content: center;
-  align-items: stretch;  /* quan trọng: kéo .screen lấp đầy chiều cao */
 
-  padding:
-    max(16px, env(safe-area-inset-top))
-    max(14px, env(safe-area-inset-right))
-    max(16px, env(safe-area-inset-bottom))
-    max(14px, env(safe-area-inset-left))
-  ;
+  padding-top:    max(16px, env(safe-area-inset-top));
+  padding-right:  max(14px, env(safe-area-inset-right));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding-left:   max(14px, env(safe-area-inset-left));
 }
 
 .screen {
   width: min(var(--maxw), 100%);
-  flex: 1;               /* chiếm toàn bộ chiều cao .app */
-  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--gap);
+  align-self: flex-start;
 }
 
 /* ============================================================
@@ -116,7 +123,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* Đảm bảo đủ chiều cao chạm tay */
   min-height: var(--touchMin);
 }
 
@@ -126,7 +132,6 @@ body {
   gap: 10px;
 }
 
-/* Nút icon — tối thiểu 44×44px theo Apple HIG */
 .iconbtn {
   width: var(--touchMin);
   height: var(--touchMin);
@@ -138,15 +143,16 @@ body {
   box-shadow: var(--shadow2);
   cursor: pointer;
   color: var(--accent);
-  /* Smooth transition trên mobile */
   transition: transform 0.12s cubic-bezier(.34,1.56,.64,1),
               box-shadow 0.18s ease,
               background 0.18s ease;
   -webkit-user-select: none;
   user-select: none;
+  text-decoration: none;
 }
 
-/* Chỉ dùng hover trên thiết bị có pointer thực (không phải touch) */
+.iconbtn:active { transform: scale(0.94); }
+
 @media (hover: hover) and (pointer: fine) {
   .iconbtn:hover {
     transform: translateY(-1px);
@@ -155,18 +161,11 @@ body {
   }
 }
 
-/* Active state cho touch */
-.iconbtn:active {
-  transform: scale(0.94);
-  box-shadow: var(--shadow2);
-}
-
 .title {
   font-weight: 900;
   font-size: 20px;
   color: var(--accent);
   letter-spacing: .2px;
-  /* Ngăn text bị chọn khi tap nhanh */
   -webkit-user-select: none;
   user-select: none;
 }
@@ -191,12 +190,9 @@ body {
 #scoreValue { color: var(--accent); }
 
 /* ============================================================
-   MAIN CARD
+   MAIN CARD — chiều cao luôn ổn định
 ============================================================ */
 .card {
-  /* Bỏ height cứng — card tự lấp đầy chiều cao còn lại trong .screen */
-  flex: 1;
-  min-height: 0;         /* flex-child phải có min-height:0 để co được */
   background: var(--card);
   border: 1px solid var(--stroke2);
   border-radius: var(--radius2);
@@ -206,16 +202,17 @@ body {
   -webkit-backdrop-filter: blur(12px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* overflow visible để đáp án D không bị cắt */
+  overflow: visible;
 }
 
 /* ============================================================
-   QUESTION BOX
+   QUESTION BOX — chiều cao CỐ ĐỊNH
+   #answerReveal dùng absolute nên KHÔNG làm box cao thêm
 ============================================================ */
 .hanzi-box {
-  /* Không dùng height cứng — box tự co theo nội dung, không chiếm không gian thừa */
-  flex: 0 0 auto;         /* không giãn, chỉ vừa đủ nội dung */
-  min-height: 130px;      /* đảm bảo có chỗ cho chữ + pinyin + hint */
+  height: var(--qBoxH);          /* ← CỐ ĐỊNH: không bao giờ thay đổi */
+  flex-shrink: 0;
   border-radius: 18px;
   border: 1px solid var(--stroke);
   background: var(--cardSolid);
@@ -223,10 +220,10 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px 16px 18px; /* padding thay cho height cứng */
+  padding: 20px 16px 16px;
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  position: relative;            /* ← quan trọng: neo cho #answerReveal absolute */
+  overflow: hidden;              /* cắt decoration, không cắt nội dung chính */
 }
 
 .hanzi-box::before {
@@ -246,7 +243,6 @@ body {
   pointer-events: none;
 }
 
-/* Nút âm thanh — đủ 44px touch area */
 .audio-btn {
   position: absolute;
   top: 10px;
@@ -262,14 +258,12 @@ body {
   color: var(--accent);
   box-shadow: var(--shadow2);
   transition: transform 0.12s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease;
-  z-index: 2;
+  z-index: 6;
   -webkit-user-select: none;
   user-select: none;
 }
 
-.audio-btn:active {
-  transform: scale(0.92);
-}
+.audio-btn:active { transform: scale(0.92); }
 
 @media (hover: hover) and (pointer: fine) {
   .audio-btn:hover {
@@ -278,42 +272,45 @@ body {
   }
 }
 
-/* Chữ Hán — size lớn nhưng không vỡ layout */
+/* --- Nội dung câu hỏi: dùng z-index để nằm trên reveal --- */
 .hanzi {
+  position: relative;
+  z-index: 2;
   font-size: clamp(44px, 12vw, 60px);
   font-weight: 950;
   color: #0f172a;
   letter-spacing: .4px;
   line-height: 1.05;
-  max-height: 120px;
-  overflow: hidden;
   word-break: break-word;
   -webkit-user-select: none;
   user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .pinyin {
+  position: relative;
+  z-index: 2;
   margin-top: 8px;
   font-size: clamp(15px, 4vw, 18px);
   font-weight: 900;
   color: var(--accent);
   line-height: 1.15;
-  max-height: 48px;
-  overflow: hidden;
   word-break: break-word;
   -webkit-user-select: none;
   user-select: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .hintline {
+  position: relative;
+  z-index: 2;
   margin-top: 8px;
   font-size: 13px;
   color: var(--muted);
   line-height: 1.25;
-  max-height: 44px;
-  overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
+  transition: opacity 0.2s ease;
 }
 
 .hanzi-box.is-reveal {
@@ -321,30 +318,83 @@ body {
 }
 
 /* ============================================================
-   ANSWERS — flex:1 tự lấp đầy, không bao giờ bị cắt đáp án D
+   ANSWER REVEAL — absolute bên trong .hanzi-box
+   Hiện ra TRÊN nền question, KHÔNG làm thay đổi kích thước box
+============================================================ */
+#answerReveal {
+  position: absolute;
+  inset: 0;                      /* phủ toàn bộ .hanzi-box */
+  z-index: 4;                    /* trên .hanzi, .pinyin */
+  /* padding đều 4 phía — reveal card căn giữa trong box */
+  padding: 14px;
+  display: flex;
+  align-items: center;           /* căn giữa theo chiều dọc */
+  justify-content: center;       /* căn giữa theo chiều ngang */
+  pointer-events: none;
+
+  /* Mặc định ẩn, JS toggle display hoặc opacity */
+  /* display: none đã được set inline trong HTML */
+}
+
+.reveal-card {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--stroke2);
+  background: rgba(255,255,255,0.96);
+  padding: 16px 18px;
+  box-shadow: var(--shadow2);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: auto;          /* bật lại click cho card reveal */
+}
+
+.reveal-hanzi {
+  font-size: 26px;
+  font-weight: 950;
+  color: #0f172a;
+  margin-bottom: 6px;
+  line-height: 1.1;
+  word-break: break-word;
+  /* clamp nếu quá dài */
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reveal-row {
+  margin: 4px 0;
+  line-height: 1.35;
+  color: var(--text);
+  font-size: 13px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.reveal-row b {
+  color: var(--muted);
+  font-weight: 950;
+}
+
+/* ============================================================
+   ANSWERS — 4 đáp án, chiều cao tổng cố định
 ============================================================ */
 .answers {
-  /* Bỏ height cứng & overflow:hidden — thay bằng flex:1 */
-  flex: 1;
-  min-height: 0;
   margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Cho phép scroll nếu màn hình cực nhỏ, thay vì cắt nội dung */
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  /* Ẩn thanh scroll */
-  scrollbar-width: none;
+  flex-shrink: 0;
 }
-.answers::-webkit-scrollbar { display: none; }
 
 .opt {
-  /* Chiều cao cố định mỗi đáp án — đảm bảo touch area */
   height: var(--optH);
   min-height: var(--optH);
-  flex-shrink: 0;        /* không bị co lại dù answers scroll */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -364,7 +414,6 @@ body {
   touch-action: manipulation;
 }
 
-/* Touch feedback ngay lập tức */
 .opt:active:not(.disabled) {
   transform: scale(0.97);
   box-shadow: 0 4px 12px rgba(16,24,40,0.10);
@@ -381,6 +430,7 @@ body {
 .opt .badge {
   width: 36px;
   height: 36px;
+  min-width: 36px;
   border-radius: 14px;
   background: rgba(46,123,209,0.10);
   border: 1px solid rgba(46,123,209,0.22);
@@ -397,8 +447,10 @@ body {
   font-size: clamp(13px, 3.5vw, 15px);
   color: var(--text);
   line-height: 1.25;
-  max-height: 100%;
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   word-break: break-word;
 }
 
@@ -409,14 +461,14 @@ body {
   height: var(--bottomH);
   display: flex;
   gap: 10px;
-  /* Đẩy xuống cuối card */
-  margin-top: auto;
+  margin-top: 12px;
+  flex-shrink: 0;
 }
 
 .btn {
   flex: 1;
   height: var(--bottomH);
-  min-height: 44px; /* Apple HIG */
+  min-height: 44px;
   border-radius: 18px;
   border: 1px solid var(--stroke);
   background: rgba(255,255,255,0.82);
@@ -489,50 +541,7 @@ body {
 }
 
 /* ============================================================
-   ANSWER REVEAL
-============================================================ */
-#answerReveal {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.reveal-card {
-  border-radius: 14px;
-  border: 1px solid var(--stroke2);
-  background: rgba(255,255,255,0.85);
-  padding: 10px 12px;
-  box-shadow: var(--shadow2);
-  text-align: left;
-  max-height: 160px;
-  overflow: hidden;
-}
-
-.reveal-hanzi {
-  font-size: 24px;
-  font-weight: 950;
-  color: #0f172a;
-  margin-bottom: 4px;
-  line-height: 1.1;
-  max-height: 38px;
-  overflow: hidden;
-  word-break: break-word;
-}
-
-.reveal-row {
-  margin: 4px 0;
-  line-height: 1.3;
-  color: var(--text);
-  font-size: 13px;
-  max-height: 48px;
-  overflow: hidden;
-}
-.reveal-row b {
-  color: var(--muted);
-  font-weight: 950;
-}
-
-/* ============================================================
-   FOCUS — Accessibility cho bàn phím bên ngoài
+   FOCUS — Accessibility
 ============================================================ */
 .opt:focus-visible,
 .btn:focus-visible,
@@ -543,32 +552,21 @@ body {
 }
 
 /* ============================================================
-   RESPONSIVE — Màn hình nhỏ (SE, Galaxy A series...)
+   RESPONSIVE — Màn hình nhỏ (≤360px)
 ============================================================ */
-@media (max-height: 680px) {
-  :root {
-    --optH: 48px;
-    --bottomH: 48px;
-    --gap: 10px;
-  }
-  .hanzi-box { padding: 14px 16px 12px; min-height: 110px; }
-  .hanzi { font-size: clamp(38px, 10vw, 52px); }
-  .title { font-size: 18px; }
-}
-
 @media (max-width: 360px) {
   :root {
-    --optH: 46px;
+    --qBoxH: 220px;
+    --optH: 50px;
     --bottomH: 48px;
     --gap: 10px;
   }
-  .hanzi-box { padding: 12px 14px 10px; min-height: 100px; }
-  .opt .badge { width: 32px; height: 32px; border-radius: 12px; }
+  .opt .badge { width: 32px; height: 32px; min-width: 32px; border-radius: 12px; }
   .title { font-size: 18px; }
 }
 
 /* ============================================================
-   Dark mode — theo system preference
+   Dark mode
 ============================================================ */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -582,8 +580,8 @@ body {
     --muted: #7a90aa;
     --accent: #60a5fa;
     --accent2: #93c5fd;
-    --shadow: 0 18px 44px rgba(0, 0, 0, 0.40);
-    --shadow2: 0 6px 18px rgba(0, 0, 0, 0.30);
+    --shadow: 0 18px 44px rgba(0,0,0,0.40);
+    --shadow2: 0 6px 18px rgba(0,0,0,0.30);
     --okBg: rgba(22,163,74,0.20);
     --badBg: rgba(239,68,68,0.20);
   }
@@ -593,6 +591,7 @@ body {
       radial-gradient(1000px 600px at 10% -10%, rgba(60,120,200,0.20), transparent 60%),
       radial-gradient(900px 600px at 110% 0%, rgba(30,80,160,0.18), transparent 55%),
       linear-gradient(180deg, var(--bg), var(--bg2));
+    background-attachment: fixed;
   }
 
   .iconbtn, .subpill, .audio-btn, .opt, .btn {
@@ -603,17 +602,25 @@ body {
     color: #e0eeff;
   }
   .reveal-card {
-    background: rgba(30,38,52,0.90);
+    background: rgba(22,30,44,0.97);
   }
-  .hanzi { color: #f0f6ff; }
+  .reveal-hanzi { color: #f0f6ff; }
 }
 
 /* ============================================================
-   Giảm motion — tôn trọng người dùng nhạy cảm
+   Giảm motion
 ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ============================================================
+   HELPER — dùng class này thay vì display:none / display:block
+   JS: el.classList.add('is-visible') / el.classList.remove('is-visible')
+============================================================ */
+#answerReveal.is-visible {
+  display: flex !important;
 }
