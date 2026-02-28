@@ -482,7 +482,6 @@ function revealAnswer() {
   const vi = currentQuestion?.["VIETNAMESE"] ?? "";
   const vd = currentQuestion?.["VD"] ?? "";
 
-  // Optional: add class to hanzi-box for styling (you'll do in CSS)
   if (DOM.hanziBox) DOM.hanziBox.classList.add("is-reveal");
 
   DOM.reveal.innerHTML = `
@@ -494,18 +493,23 @@ function revealAnswer() {
     </div>
   `;
 
-  DOM.reveal.style.display = "block";
+  // ✅ dùng class để hiện overlay (không dùng style.display)
+  DOM.reveal.classList.add("is-visible");
 
-  // Fit reveal content too (it sits inside fixed box)
-  const revealCard = DOM.reveal.querySelector(".reveal-card");
+  // Fit reveal content too
   const revealHanzi = DOM.reveal.querySelector(".reveal-hanzi");
   if (revealHanzi) {
     resetInlineFont(revealHanzi);
     shrinkToFit(revealHanzi, 18, SETTINGS.autoFit.maxSteps);
   }
-  if (revealCard) {
-    scheduleAutoFit();
-  }
+
+  const rows = Array.from(DOM.reveal.querySelectorAll(".reveal-row"));
+  rows.forEach(row => {
+    resetInlineFont(row);
+    shrinkToFit(row, 11, SETTINGS.autoFit.maxSteps);
+  });
+
+  scheduleAutoFit();
 }
 
 function clearReveal() {
@@ -513,7 +517,8 @@ function clearReveal() {
 
   if (DOM.hanziBox) DOM.hanziBox.classList.remove("is-reveal");
 
-  DOM.reveal.style.display = "none";
+  // ✅ tắt overlay bằng class
+  DOM.reveal.classList.remove("is-visible");
   DOM.reveal.innerHTML = "";
 }
 
