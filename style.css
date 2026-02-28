@@ -1,10 +1,14 @@
+/* ============================================================
+   MOBILE-FIRST CSS — Tối ưu cho iOS & Android
+   ============================================================ */
+
 :root{
-  /* ===== Light Modern Theme (Duolingo/Quizlet-ish) ===== */
+  /* ===== Light Modern Theme ===== */
   --bg: #f6f8fc;
   --bg2:#eef3fb;
 
-  --card: rgba(255,255,255,0.74);
-  --cardSolid: rgba(255,255,255,0.92);
+  --card: rgba(255,255,255,0.82);
+  --cardSolid: rgba(255,255,255,0.95);
 
   --stroke: rgba(34, 86, 160, 0.14);
   --stroke2: rgba(34, 86, 160, 0.10);
@@ -19,7 +23,7 @@
   --radius2: 22px;
 
   --shadow: 0 18px 44px rgba(16, 24, 40, 0.12);
-  --shadow2: 0 10px 22px rgba(16, 24, 40, 0.10);
+  --shadow2: 0 6px 18px rgba(16, 24, 40, 0.09);
 
   /* Correct / Wrong */
   --ok: #16a34a;
@@ -31,405 +35,582 @@
   --badStroke: rgba(239,68,68,0.30);
 
   /* Sizing */
-  --maxw: 420px;
-  --gap: 14px;
+  --maxw: 430px;
+  --gap: 12px;
 
-  /* Fixed-height strategy */
-  --cardH: clamp(540px, 82vh, 640px);  /* iOS-like: fixed feel but vh-based */
-  --qBoxH: 260px;                      /* question/reveal box fixed height */
-  --answersH: 220px;                   /* answers area fixed height (4 rows) */
-  --bottomH: 56px;                     /* bottom buttons row fixed height */
+  /* Touch-safe sizes (min 44px per Apple/Google HIG) */
+  --touchMin: 48px;
+
+  /* Card heights — dùng dvh thay vh để tránh thanh địa chỉ di động */
+  --cardH: calc(100dvh - 160px);  /* responsive theo chiều cao thực tế */
+  --qBoxH: clamp(220px, 34dvh, 280px);
+  --answersH: clamp(200px, 30dvh, 240px);
+  --bottomH: 52px;
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
+/* ============================================================
+   RESET & BASE
+============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* Bỏ highlight xanh khi tap trên Android */
+}
 
-body{
-  margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+html {
+  height: 100%;
+  /* Ngăn zoom kép (double-tap zoom) trên iOS */
+  touch-action: manipulation;
+  /* Render font sắc nét trên iOS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  min-height: -webkit-fill-available; /* iOS Safari full height fix */
+
+  font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Text",
+               "Google Sans", Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
+
   background:
     radial-gradient(1000px 600px at 10% -10%, rgba(111,182,255,0.28), transparent 60%),
     radial-gradient(900px 600px at 110% 0%, rgba(46,123,209,0.18), transparent 55%),
     linear-gradient(180deg, var(--bg), var(--bg2));
+  background-attachment: fixed; /* Nền cố định khi scroll */
+
+  /* Ngăn overscroll bounce trên iOS làm lộ nền trắng */
+  overscroll-behavior: none;
 }
 
-.app{
-  min-height:100%;
-  display:flex;
-  justify-content:center;
-  padding:20px 14px;
+/* ============================================================
+   APP WRAPPER — Safe Area cho notch/Dynamic Island/chin
+============================================================ */
+.app {
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+
+  /* Padding tính thêm vùng notch & home indicator */
+  padding:
+    max(16px, env(safe-area-inset-top))    /* top: notch */
+    max(14px, env(safe-area-inset-right))  /* right */
+    max(16px, env(safe-area-inset-bottom)) /* bottom: home indicator */
+    max(14px, env(safe-area-inset-left))   /* left */
+  ;
 }
 
-.screen{
-  width:min(var(--maxw),100%);
-  display:flex;
-  flex-direction:column;
-  gap:var(--gap);
+.screen {
+  width: min(var(--maxw), 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
 }
 
-/* =========================================
-   Topbar
-========================================= */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+/* ============================================================
+   TOPBAR
+============================================================ */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Đảm bảo đủ chiều cao chạm tay */
+  min-height: var(--touchMin);
 }
 
-.tb-left{
-  display:flex;
-  align-items:center;
-  gap:12px;
+.tb-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.iconbtn{
-  width:46px;
-  height:46px;
-  border-radius:16px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,0.72);
-  display:grid;
-  place-items:center;
-  box-shadow:var(--shadow2);
-  cursor:pointer;
+/* Nút icon — tối thiểu 44×44px theo Apple HIG */
+.iconbtn {
+  width: var(--touchMin);
+  height: var(--touchMin);
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.82);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow2);
+  cursor: pointer;
   color: var(--accent);
-  transition: transform .08s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease;
-}
-.iconbtn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
-  border-color: rgba(34,86,160,0.18);
-}
-
-.title{
-  font-weight: 900;
-  font-size: 22px;
-  color: var(--accent);
-  letter-spacing: .2px;
+  /* Smooth transition trên mobile */
+  transition: transform 0.12s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.18s ease,
+              background 0.18s ease;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.subpill{
-  height:46px;
-  padding:0 14px;
-  border-radius:18px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,0.72);
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight: 900;
-  color: var(--text);
+/* Chỉ dùng hover trên thiết bị có pointer thực (không phải touch) */
+@media (hover: hover) and (pointer: fine) {
+  .iconbtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(16,24,40,0.14);
+    border-color: rgba(34,86,160,0.22);
+  }
+}
+
+/* Active state cho touch */
+.iconbtn:active {
+  transform: scale(0.94);
   box-shadow: var(--shadow2);
 }
-#scoreValue{ color: var(--accent); }
 
-/* =========================================
-   MAIN CARD (fixed feel + vh-based)
-========================================= */
-.card{
+.title {
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: .2px;
+  /* Ngăn text bị chọn khi tap nhanh */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.subpill {
+  height: var(--touchMin);
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.82);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 15px;
+  color: var(--text);
+  box-shadow: var(--shadow2);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#scoreValue { color: var(--accent); }
+
+/* ============================================================
+   MAIN CARD
+============================================================ */
+.card {
   height: var(--cardH);
+  min-height: 420px;
   background: var(--card);
   border: 1px solid var(--stroke2);
   border-radius: var(--radius2);
   padding: 14px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
 
-  display:flex;
-  flex-direction:column;
-  overflow:hidden; /* critical: never grow */
+  /* Chỉ dùng backdrop-filter khi hardware hỗ trợ tốt */
+  @supports (backdrop-filter: blur(1px)) {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* =========================================
-   QUESTION BOX (fixed height)
-========================================= */
-.hanzi-box{
+/* ============================================================
+   QUESTION BOX
+============================================================ */
+.hanzi-box {
   height: var(--qBoxH);
   border-radius: 18px;
   border: 1px solid var(--stroke);
   background: var(--cardSolid);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  padding: 18px;
-  text-align:center;
-  position:relative;
-  overflow:hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
   flex: 0 0 auto;
 }
 
-.hanzi-box::before{
-  content:"";
-  position:absolute;
-  width:260px; height:260px;
-  top:-140px; left:-140px;
+.hanzi-box::before {
+  content: "";
+  position: absolute;
+  width: 260px; height: 260px;
+  top: -140px; left: -140px;
   background: radial-gradient(circle at 40% 40%, rgba(111,182,255,0.35), transparent 62%);
-  pointer-events:none;
+  pointer-events: none;
 }
-.hanzi-box::after{
-  content:"";
-  position:absolute;
-  width:260px; height:260px;
-  bottom:-160px; right:-140px;
+.hanzi-box::after {
+  content: "";
+  position: absolute;
+  width: 260px; height: 260px;
+  bottom: -160px; right: -140px;
   background: radial-gradient(circle at 40% 40%, rgba(46,123,209,0.18), transparent 64%);
-  pointer-events:none;
+  pointer-events: none;
 }
 
-.audio-btn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:44px;
-  height:44px;
-  border-radius:16px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,0.72);
-  display:grid;
-  place-items:center;
-  cursor:pointer;
+/* Nút âm thanh — đủ 44px touch area */
+.audio-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: var(--touchMin);
+  height: var(--touchMin);
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.82);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
   color: var(--accent);
   box-shadow: var(--shadow2);
-  transition: transform .08s ease, box-shadow .16s ease, background .16s ease;
+  transition: transform 0.12s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease;
   z-index: 2;
-}
-.audio-btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-/* ---- Text in question box: keep inside height ---- */
-.hanzi{
-  font-size: 58px;     /* JS autoFit will shrink if overflow */
+.audio-btn:active {
+  transform: scale(0.92);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .audio-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(16,24,40,0.14);
+  }
+}
+
+/* Chữ Hán — size lớn nhưng không vỡ layout */
+.hanzi {
+  font-size: clamp(44px, 12vw, 60px);
   font-weight: 950;
   color: #0f172a;
   letter-spacing: .4px;
   line-height: 1.05;
   max-height: 120px;
-  overflow:hidden;
+  overflow: hidden;
   word-break: break-word;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.pinyin{
-  margin-top: 10px;
-  font-size: 18px;
+.pinyin {
+  margin-top: 8px;
+  font-size: clamp(15px, 4vw, 18px);
   font-weight: 900;
   color: var(--accent);
   line-height: 1.15;
   max-height: 48px;
-  overflow:hidden;
+  overflow: hidden;
   word-break: break-word;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.hintline{
-  margin-top: 10px;
+.hintline {
+  margin-top: 8px;
   font-size: 13px;
   color: var(--muted);
   line-height: 1.25;
   max-height: 44px;
-  overflow:hidden;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-/* Reveal state (optional visual) */
-.hanzi-box.is-reveal{
+.hanzi-box.is-reveal {
   border-color: rgba(46,123,209,0.22);
 }
 
-/* =========================================
-   ANSWERS (fixed area, no growth)
-========================================= */
-.answers{
+/* ============================================================
+   ANSWERS
+============================================================ */
+.answers {
   height: var(--answersH);
-  margin-top: 14px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  overflow:hidden;   /* never push card */
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
   flex: 0 0 auto;
 }
 
-/* Each option row uses consistent height to avoid growth */
-.opt{
-  height: calc((var(--answersH) - 36px) / 4); /* 4 rows + 3 gaps*12=36 */
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding: 12px 14px;
-  border-radius:18px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,0.72);
-  cursor:pointer;
+.opt {
+  /* Đủ 44px chiều cao tối thiểu */
+  height: calc((var(--answersH) - 30px) / 4); /* 4 rows, 3 gaps × 10px */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.82);
+  cursor: pointer;
   box-shadow: var(--shadow2);
-  transition: transform .08s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
-  overflow:hidden; /* prevent label overflow */
+  /* Transition nhanh hơn trên mobile */
+  transition: transform 0.10s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.14s ease,
+              border-color 0.14s ease,
+              background 0.14s ease;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Đảm bảo touch area đủ lớn */
+  touch-action: manipulation;
 }
 
-.opt:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
-  border-color: rgba(34,86,160,0.18);
+/* Touch feedback ngay lập tức */
+.opt:active:not(.disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(16,24,40,0.10);
 }
 
-.opt .badge{
-  width:36px;
-  height:36px;
-  border-radius:14px;
+@media (hover: hover) and (pointer: fine) {
+  .opt:hover:not(.disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(16,24,40,0.14);
+    border-color: rgba(34,86,160,0.20);
+  }
+}
+
+.opt .badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
   background: rgba(46,123,209,0.10);
   border: 1px solid rgba(46,123,209,0.22);
-  display:grid;
-  place-items:center;
+  display: grid;
+  place-items: center;
   font-weight: 950;
+  font-size: 15px;
   color: var(--accent);
   flex: 0 0 auto;
 }
 
-.opt .label{
-  font-weight: 900;
+.opt .label {
+  font-weight: 700;
+  font-size: clamp(13px, 3.5vw, 15px);
   color: var(--text);
-  line-height: 1.2;
+  line-height: 1.25;
   max-height: 100%;
-  overflow:hidden;
+  overflow: hidden;
   word-break: break-word;
-  /* if very long: JS autoFit will shrink font-size */
 }
 
-/* =========================================
-   Bottom buttons (fixed row)
-========================================= */
-.bottom{
+/* ============================================================
+   BOTTOM BUTTONS
+============================================================ */
+.bottom {
   height: var(--bottomH);
-  display:flex;
-  gap:12px;
-  margin-top: auto;     /* push to bottom inside card feel */
+  display: flex;
+  gap: 10px;
+  /* Đẩy xuống cuối card */
+  margin-top: auto;
 }
 
-.btn{
-  flex:1;
+.btn {
+  flex: 1;
   height: var(--bottomH);
-  border-radius:18px;
-  border:1px solid var(--stroke);
-  background: rgba(255,255,255,0.72);
+  min-height: 44px; /* Apple HIG */
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.82);
   color: var(--text);
-  font-weight: 950;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
+  font-weight: 900;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   box-shadow: var(--shadow2);
-  transition: transform .08s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
-  user-select:none;
+  transition: transform 0.10s cubic-bezier(.34,1.56,.64,1),
+              box-shadow 0.14s ease,
+              background 0.14s ease;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
-.btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
-}
-.btn:active{ transform: translateY(0px); }
 
-.btn-primary{
+.btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 12px rgba(16,24,40,0.08);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(16,24,40,0.14);
+  }
+}
+
+.btn-primary {
   background: linear-gradient(180deg, var(--accent2), var(--accent));
   border-color: rgba(46,123,209,0.28);
   color: #081526;
 }
 
-/* =========================================
-   States: correct / wrong / disabled
-========================================= */
-.opt.is-wrong{
+/* ============================================================
+   STATES: correct / wrong / disabled
+============================================================ */
+.opt.is-wrong {
   border-color: var(--badStroke);
   background: var(--badBg);
   box-shadow:
-    0 18px 40px rgba(239,68,68,0.10),
+    0 10px 28px rgba(239,68,68,0.10),
     0 0 0 1px rgba(239,68,68,0.10) inset;
 }
-.opt.is-wrong .badge{
+.opt.is-wrong .badge {
   background: rgba(239,68,68,0.14);
   border-color: rgba(239,68,68,0.26);
   color: #b91c1c;
 }
 
-.opt.is-correct{
+.opt.is-correct {
   border-color: var(--okStroke);
   background: var(--okBg);
   box-shadow:
-    0 18px 40px rgba(22,163,74,0.10),
+    0 10px 28px rgba(22,163,74,0.10),
     0 0 0 1px rgba(22,163,74,0.10) inset;
 }
-.opt.is-correct .badge{
+.opt.is-correct .badge {
   background: rgba(22,163,74,0.14);
   border-color: rgba(22,163,74,0.26);
   color: #166534;
 }
 
-.opt.disabled{
+.opt.disabled {
   pointer-events: none;
-  opacity: 0.92;
-  filter: saturate(0.98);
+  opacity: 0.88;
 }
 
-/* =========================================
-   Reveal card inside hanzi-box (JS uses these)
-========================================= */
-#answerReveal{
+/* ============================================================
+   ANSWER REVEAL
+============================================================ */
+#answerReveal {
   width: 100%;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
-.reveal-card{
-  border-radius: 16px;
+.reveal-card {
+  border-radius: 14px;
   border: 1px solid var(--stroke2);
-  background: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.85);
   padding: 10px 12px;
   box-shadow: var(--shadow2);
   text-align: left;
-  max-height: 170px; /* keep inside fixed qBoxH */
-  overflow:hidden;
+  max-height: 160px;
+  overflow: hidden;
 }
 
-.reveal-hanzi{
-  font-size: 26px;     /* JS will shrink if needed */
+.reveal-hanzi {
+  font-size: 24px;
   font-weight: 950;
   color: #0f172a;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   line-height: 1.1;
-  max-height: 40px;
-  overflow:hidden;
+  max-height: 38px;
+  overflow: hidden;
   word-break: break-word;
 }
 
-.reveal-row{
-  margin: 6px 0;
-  line-height: 1.25;
+.reveal-row {
+  margin: 4px 0;
+  line-height: 1.3;
   color: var(--text);
   font-size: 13px;
   max-height: 48px;
-  overflow:hidden;
+  overflow: hidden;
 }
-.reveal-row b{
+.reveal-row b {
   color: var(--muted);
   font-weight: 950;
 }
 
-/* =========================================
-   Focus
-========================================= */
+/* ============================================================
+   FOCUS — Accessibility cho bàn phím bên ngoài
+============================================================ */
 .opt:focus-visible,
 .btn:focus-visible,
 .iconbtn:focus-visible,
-.audio-btn:focus-visible{
-  outline: 3px solid rgba(46,123,209,0.28);
-  outline-offset: 2px;
+.audio-btn:focus-visible {
+  outline: 3px solid rgba(46,123,209,0.32);
+  outline-offset: 3px;
 }
 
-/* =========================================
-   Small screens: keep height strategy stable
-========================================= */
-@media (max-width: 360px){
-  :root{
-    --cardH: clamp(520px, 84vh, 620px);
-    --qBoxH: 250px;
-    --answersH: 210px;
-    --bottomH: 52px;
+/* ============================================================
+   RESPONSIVE — Màn hình nhỏ (SE, Galaxy A series...)
+============================================================ */
+@media (max-height: 680px) {
+  :root {
+    --qBoxH: clamp(200px, 30dvh, 240px);
+    --answersH: clamp(186px, 28dvh, 210px);
+    --bottomH: 48px;
+    --gap: 10px;
   }
-  .title{ font-size: 20px; }
+  .hanzi { font-size: clamp(38px, 10vw, 52px); }
+  .title { font-size: 18px; }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --qBoxH: 210px;
+    --answersH: 196px;
+    --bottomH: 48px;
+    --gap: 10px;
+  }
+  .opt .badge { width: 32px; height: 32px; border-radius: 12px; }
+  .title { font-size: 18px; }
+}
+
+/* ============================================================
+   Dark mode — theo system preference
+============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --bg2: #111827;
+    --card: rgba(22,28,38,0.88);
+    --cardSolid: rgba(26,34,46,0.96);
+    --stroke: rgba(99,155,230,0.16);
+    --stroke2: rgba(99,155,230,0.10);
+    --text: #e8edf5;
+    --muted: #7a90aa;
+    --accent: #60a5fa;
+    --accent2: #93c5fd;
+    --shadow: 0 18px 44px rgba(0, 0, 0, 0.40);
+    --shadow2: 0 6px 18px rgba(0, 0, 0, 0.30);
+    --okBg: rgba(22,163,74,0.20);
+    --badBg: rgba(239,68,68,0.20);
+  }
+
+  body {
+    background:
+      radial-gradient(1000px 600px at 10% -10%, rgba(60,120,200,0.20), transparent 60%),
+      radial-gradient(900px 600px at 110% 0%, rgba(30,80,160,0.18), transparent 55%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+  }
+
+  .iconbtn, .subpill, .audio-btn, .opt, .btn {
+    background: rgba(30,38,52,0.82);
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+    color: #e0eeff;
+  }
+  .reveal-card {
+    background: rgba(30,38,52,0.90);
+  }
+  .hanzi { color: #f0f6ff; }
+}
+
+/* ============================================================
+   Giảm motion — tôn trọng người dùng nhạy cảm
+============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
