@@ -1,0 +1,384 @@
+:root{
+  /* ===== Light Modern Theme ===== */
+  --bg: #f6f8fc;
+  --bg2:#eef3fb;
+
+  --card: rgba(255,255,255,0.72);
+  --cardSolid: rgba(255,255,255,0.92);
+
+  --stroke: rgba(34, 86, 160, 0.14);
+  --stroke2: rgba(34, 86, 160, 0.10);
+
+  --text: #1b2430;
+  --muted:#607089;
+
+  --accent:#2e7bd1;
+  --accent2:#6fb6ff;
+
+  --radius: 18px;
+  --radius2: 22px;
+
+  --shadow: 0 18px 44px rgba(16, 24, 40, 0.12);
+  --shadow2: 0 10px 22px rgba(16, 24, 40, 0.10);
+
+  /* Correct / Wrong (pastel but clear) */
+  --ok: #16a34a;
+  --okBg: rgba(22,163,74,0.12);
+  --okStroke: rgba(22,163,74,0.28);
+
+  --bad: #ef4444;
+  --badBg: rgba(239,68,68,0.12);
+  --badStroke: rgba(239,68,68,0.28);
+
+  --maxw: 420px;
+  --gap: 14px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color: var(--text);
+  background:
+    radial-gradient(1000px 600px at 10% -10%, rgba(111,182,255,0.28), transparent 60%),
+    radial-gradient(900px 600px at 110% 0%, rgba(46,123,209,0.18), transparent 55%),
+    linear-gradient(180deg, var(--bg), var(--bg2));
+}
+
+.app{
+  min-height:100%;
+  display:flex;
+  justify-content:center;
+  padding:20px 14px;
+}
+
+.screen{
+  width:min(var(--maxw),100%);
+  display:flex;
+  flex-direction:column;
+  gap:var(--gap);
+}
+
+/* =========================================
+   Topbar
+========================================= */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.tb-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.iconbtn{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,0.72);
+  display:grid;
+  place-items:center;
+  box-shadow:var(--shadow2);
+  cursor:pointer;
+  color: var(--accent);
+  transition: transform .08s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease;
+}
+.iconbtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
+  border-color: rgba(34,86,160,0.18);
+}
+
+.title{
+  font-weight: 800;
+  font-size: 22px;
+  color: var(--accent);
+  letter-spacing: .2px;
+}
+
+.subpill{
+  height:46px;
+  padding:0 14px;
+  border-radius:18px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,0.72);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight: 800;
+  color: var(--text);
+  box-shadow: var(--shadow2);
+}
+#scoreValue{ color: var(--accent); }
+
+/* =========================================
+   Main card
+========================================= */
+.card{
+  background: var(--card);
+  border: 1px solid var(--stroke2);
+  border-radius: var(--radius2);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+/* =========================================
+   Hanzi box
+========================================= */
+.hanzi-box{
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: var(--cardSolid);
+  min-height: 240px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding: 18px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.hanzi-box::before{
+  content:"";
+  position:absolute;
+  width:260px; height:260px;
+  top:-140px; left:-140px;
+  background: radial-gradient(circle at 40% 40%, rgba(111,182,255,0.35), transparent 62%);
+  pointer-events:none;
+}
+.hanzi-box::after{
+  content:"";
+  position:absolute;
+  width:260px; height:260px;
+  bottom:-160px; right:-140px;
+  background: radial-gradient(circle at 40% 40%, rgba(46,123,209,0.18), transparent 64%);
+  pointer-events:none;
+}
+
+.audio-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,0.72);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  color: var(--accent);
+  box-shadow: var(--shadow2);
+  transition: transform .08s ease, box-shadow .16s ease, background .16s ease;
+}
+.audio-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
+}
+
+.hanzi{
+  font-size: 58px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: .4px;
+}
+
+.pinyin{
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.hintline{
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* =========================================
+   Answers
+========================================= */
+.answers{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.opt{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,0.72);
+  cursor:pointer;
+  box-shadow: var(--shadow2);
+  transition: transform .08s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.opt:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
+  border-color: rgba(34,86,160,0.18);
+}
+
+.opt:active{ transform: translateY(0px); }
+
+.opt .badge{
+  width:36px;
+  height:36px;
+  border-radius:14px;
+  background: rgba(46,123,209,0.10);
+  border: 1px solid rgba(46,123,209,0.22);
+  display:grid;
+  place-items:center;
+  font-weight: 900;
+  color: var(--accent);
+  flex: 0 0 auto;
+}
+
+.opt .label{
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* =========================================
+   Bottom buttons
+========================================= */
+.bottom{
+  display:flex;
+  gap:12px;
+}
+
+.btn{
+  flex:1;
+  height:54px;
+  border-radius:18px;
+  border:1px solid var(--stroke);
+  background: rgba(255,255,255,0.72);
+  color: var(--text);
+  font-weight: 900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow: var(--shadow2);
+  transition: transform .08s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+.btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(16,24,40,0.14);
+}
+.btn:active{ transform: translateY(0px); }
+
+.btn-primary{
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+  border-color: rgba(46,123,209,0.28);
+  color: #081526;
+}
+
+/* =========================================
+   States: correct / wrong / disabled
+========================================= */
+.opt.is-wrong{
+  border-color: var(--badStroke);
+  background: var(--badBg);
+  box-shadow:
+    0 18px 40px rgba(239,68,68,0.10),
+    0 0 0 1px rgba(239,68,68,0.12) inset;
+}
+
+.opt.is-wrong .badge{
+  background: rgba(239,68,68,0.14);
+  border-color: rgba(239,68,68,0.26);
+  color: #b91c1c;
+}
+
+.opt.is-correct{
+  border-color: var(--okStroke);
+  background: var(--okBg);
+  box-shadow:
+    0 18px 40px rgba(22,163,74,0.10),
+    0 0 0 1px rgba(22,163,74,0.12) inset;
+}
+
+.opt.is-correct .badge{
+  background: rgba(22,163,74,0.14);
+  border-color: rgba(22,163,74,0.26);
+  color: #166534;
+}
+
+/* Disable: still readable */
+.opt.disabled{
+  pointer-events: none;
+  opacity: 0.92;
+  filter: saturate(0.98);
+}
+
+/* =========================================
+   Reveal inside Hanzi box
+========================================= */
+.hanzi-box #answerReveal{
+  width: 100%;
+  margin-top: 14px;
+}
+
+.hanzi-box .reveal-card{
+  border-radius: 16px;
+  border: 1px solid var(--stroke2);
+  background: rgba(255,255,255,0.76);
+  padding: 12px 12px;
+  box-shadow: var(--shadow2);
+  text-align: left;
+}
+
+.hanzi-box .reveal-card h3{
+  margin: 0 0 8px 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.hanzi-box .reveal-card p{
+  margin: 6px 0;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.hanzi-box .reveal-card b{
+  color: var(--muted);
+  font-weight: 900;
+}
+
+/* =========================================
+   Focus
+========================================= */
+.opt:focus-visible,
+.btn:focus-visible,
+.iconbtn:focus-visible,
+.audio-btn:focus-visible{
+  outline: 3px solid rgba(46,123,209,0.28);
+  outline-offset: 2px;
+}
+
+/* =========================================
+   Small screens
+========================================= */
+@media (max-width: 360px){
+  .title{ font-size: 20px; }
+  .hanzi{ font-size: 52px; }
+  .pinyin{ font-size: 17px; }
+  .btn{ height: 50px; }
+}

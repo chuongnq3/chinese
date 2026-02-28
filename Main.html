@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Flashcard tiếng Trung</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app">
+    <div class="screen" role="application" aria-label="Học tiếng Trung">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="tb-left">
+          <div class="iconbtn" role="button" aria-label="Trang chủ">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-10.5z"
+                stroke="currentColor" stroke-width="2" stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="title" id="questionTitle">Câu 1</div>
+        </div>
+
+        <div class="subpill" id="scoreBox" aria-label="Tổng điểm">
+          Điểm: <span id="scoreValue">0</span>
+        </div>
+      </header>
+
+      <!-- MAIN CARD -->
+      <main class="card" aria-label="Bài luyện tập">
+
+        <!-- Question + Result Card (same container) -->
+        <section class="hanzi-box" aria-label="Câu hỏi">
+
+          <!-- Speak -->
+          <div class="audio-btn" role="button" aria-label="Phát âm" data-action="speak">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M15.5 8.5a4.5 4.5 0 0 1 0 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M18 6a8 8 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <!-- Question content -->
+          <div class="hanzi" id="hanziText">您好</div>
+          <div class="pinyin" id="pinyinText">nínhǎo</div>
+
+          <!-- Instruction -->
+          <div class="hintline" id="instructionText">
+            Chọn nghĩa đúng bên dưới
+          </div>
+
+          <!-- ✅ Result reveal INSIDE card -->
+          <section id="answerReveal" aria-label="Giải thích" style="display:none;"></section>
+
+        </section>
+
+        <!-- Answers -->
+        <section class="answers" aria-label="Đáp án">
+          <div class="opt" data-choice="A" role="button" tabindex="0">
+            <div class="badge">A</div>
+            <div class="label">...</div>
+          </div>
+
+          <div class="opt" data-choice="B" role="button" tabindex="0">
+            <div class="badge">B</div>
+            <div class="label">...</div>
+          </div>
+
+          <div class="opt" data-choice="C" role="button" tabindex="0">
+            <div class="badge">C</div>
+            <div class="label">...</div>
+          </div>
+
+          <div class="opt" data-choice="D" role="button" tabindex="0">
+            <div class="badge">D</div>
+            <div class="label">...</div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- BOTTOM ACTIONS -->
+      <footer class="bottom" aria-label="Hành động">
+        <div class="btn" role="button" data-action="hint" aria-label="Gợi ý">
+          Gợi ý
+        </div>
+
+        <div class="btn btn-primary" role="button" data-action="skip" aria-label="Bỏ qua">
+          Bỏ qua
+        </div>
+
+        <div class="btn" role="button" data-action="continue" aria-label="Tiếp tục">
+          Tiếp tục
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
