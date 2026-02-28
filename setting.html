@@ -77,7 +77,7 @@
           <div class="settings-head">
             <div class="settings-h">Thiết lập luyện tập</div>
             <div class="settings-sub">
-              Chỉnh nhanh vài tuỳ chọn cơ bản. (Có thể nối vào <code>localStorage</code> sau.)
+              Chỉnh nhanh vài tuỳ chọn cơ bản. (Đã lưu trong <code>localStorage</code>.)
             </div>
           </div>
         </section>
@@ -115,12 +115,11 @@
               <div class="d">Chỉ hiện phần giải thích trong thẻ.</div>
             </div>
             <div class="set-ctrl">
-              <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0">
-              </div>
+              <div class="switch" id="swFlipOnCorrect" data-on="true" role="switch" aria-checked="true" tabindex="0"></div>
             </div>
           </div>
 
-          <!-- TYPE row opens bottom sheet (keeps fixed height like index) -->
+          <!-- TYPE row opens bottom sheet -->
           <div class="opt set-row" id="typeRow" role="button" tabindex="0" aria-label="Bộ từ">
             <div class="badge" aria-hidden="true">4</div>
             <div class="label">
@@ -145,7 +144,7 @@
     </div>
   </div>
 
-  <!-- TYPE Bottom Sheet (MUST be inside body) -->
+  <!-- TYPE Bottom Sheet -->
   <div class="type-sheet" id="typeSheet" aria-hidden="true">
     <div class="sheet-backdrop" id="sheetBackdrop" aria-hidden="true"></div>
 
@@ -167,21 +166,36 @@
   </div>
 
   <script>
+    // Must match app.js
+    const SETTINGS_STORAGE_KEY = "FC_SETTINGS_V1";
+
     function toggleSwitch(el) {
       const on = el.getAttribute("data-on") === "true";
       el.setAttribute("data-on", String(!on));
       el.setAttribute("aria-checked", String(!on));
     }
 
+    function setSwitch(el, on){
+      el.setAttribute("data-on", String(!!on));
+      el.setAttribute("aria-checked", String(!!on));
+    }
+
     const swAutoNext = document.getElementById("swAutoNext");
     const swFlipOnCorrect = document.getElementById("swFlipOnCorrect");
+    const autoNextDelayEl = document.getElementById("autoNextDelay");
 
+    // switch interactions
     [swAutoNext, swFlipOnCorrect].forEach(sw => {
-      sw.addEventListener("click", () => toggleSwitch(sw));
+      sw.addEventListener("click", () => {
+        toggleSwitch(sw);
+        if (sw === swAutoNext) syncDelayEnabled();
+      });
+
       sw.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           toggleSwitch(sw);
+          if (sw === swAutoNext) syncDelayEnabled();
         }
       });
     });
@@ -239,22 +253,87 @@
         chip.classList.add("is-on");
         chip.setAttribute("aria-pressed", "true");
       }
+
+      updateSummary();
     });
 
-    document.getElementById("btnSave").addEventListener("click", () => {
-      // UI-only for now: you can wire to localStorage later
-      // const payload = {
-      //   autoNext: swAutoNext.getAttribute("data-on")==="true",
-      //   autoNextDelay: Number(document.getElementById("autoNextDelay").value || 5),
-      //   flipOnCorrect: swFlipOnCorrect.getAttribute("data-on")==="true",
-      //   defaultTypes: getSelectedTypes(),
-      // };
-      // console.log(payload);
+    function syncDelayEnabled(){
+      const on = swAutoNext.getAttribute("data-on") === "true";
+      autoNextDelayEl.disabled = !on;
+      autoNextDelayEl.style.opacity = on ? "1" : "0.6";
+    }
 
+    function loadSettingsToUi(){
+      const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (!raw) {
+        // default state from HTML
+        updateSummary();
+        syncDelayEnabled();
+        return;
+      }
+
+      let saved = null;
+      try { saved = JSON.parse(raw); } catch { saved = null; }
+      if (!saved || typeof saved !== "object") {
+        updateSummary();
+        syncDelayEnabled();
+        return;
+      }
+
+      if (typeof saved.autoNext === "boolean") {
+        setSwitch(swAutoNext, saved.autoNext);
+      }
+
+      if (typeof saved.flipOnCorrect === "boolean") {
+        setSwitch(swFlipOnCorrect, saved.flipOnCorrect);
+      }
+
+      if (saved.autoNextDelay != null) {
+        const v = Number(saved.autoNextDelay);
+        if (Number.isFinite(v)) {
+          const vv = Math.max(1, Math.min(30, v));
+          autoNextDelayEl.value = String(vv);
+        }
+      }
+
+      if (Array.isArray(saved.defaultTypes) && saved.defaultTypes.length) {
+        const wanted = new Set(saved.defaultTypes.map(x => String(x).trim()).filter(Boolean));
+
+        sheetTypes.querySelectorAll(".chip").forEach(ch => {
+          const on = wanted.has(ch.dataset.type);
+          ch.classList.toggle("is-on", on);
+          ch.setAttribute("aria-pressed", String(on));
+        });
+
+        // guard: keep at least 1 selected
+        if (getSelectedTypes().length === 0) {
+          const first = sheetTypes.querySelector(".chip");
+          if (first) {
+            first.classList.add("is-on");
+            first.setAttribute("aria-pressed", "true");
+          }
+        }
+      }
+
+      updateSummary();
+      syncDelayEnabled();
+    }
+
+    document.getElementById("btnSave").addEventListener("click", () => {
+      const delaySec = Number(autoNextDelayEl.value || 5);
+      const payload = {
+        autoNext: swAutoNext.getAttribute("data-on") === "true",
+        autoNextDelay: Number.isFinite(delaySec) ? Math.max(1, Math.min(30, delaySec)) : 5,
+        flipOnCorrect: swFlipOnCorrect.getAttribute("data-on") === "true",
+        defaultTypes: getSelectedTypes(),
+      };
+
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload));
       window.location.href = "index.html";
     });
 
-    updateSummary();
+    // init
+    loadSettingsToUi();
   </script>
 </body>
 </html>
