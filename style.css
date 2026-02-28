@@ -153,6 +153,14 @@ body {
 
 .iconbtn:active { transform: scale(0.94); }
 
+/* icon active (used for Home active on index + Gear active on setting) */
+.iconbtn.is-active{
+  border-color: rgba(46,123,209,0.32);
+  box-shadow:
+    0 0 0 3px rgba(46,123,209,0.16),
+    var(--shadow2);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .iconbtn:hover {
     transform: translateY(-1px);
